@@ -74,7 +74,7 @@ gzip 压缩的 JSON 保存在头显上。本项目把这些文件解析成可读
 | 发布日期 | 2026-11-15 |
 | 适用平台 | Windows 10/11 64 位 + Meta Quest（已开启开发者模式 / USB 调试） |
 | 运行环境 | 便携版自带 Python 3.10.5（含 tkinter）与 adb；零第三方 pip 依赖 |
-| 下载 | [GitHub Releases · v0.2.0](https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.2.0) → `H3VR2存档编辑器_v0.2.0_Windows便携版.zip` |
+| 下载 | [GitHub Releases · v0.2.0](https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.2.0) → `H3VR2-Save-Editor-v0.2.0-Windows-Portable.zip` |
 | 项目页 | [GitHub Pages](https://leonnagant.github.io/h3vr2-save-editor/) |
 | 更新日志 | [CHANGELOG.md](CHANGELOG.md) · [VERSION.txt](VERSION.txt) |
 
@@ -86,7 +86,8 @@ v0.2.0 相比 v0.1.0 新增预设 / 自动还原 / 仓库编辑 / 收藏，并�
 ### 方式 A：Windows 便携版（推荐，普通用户）
 
 1. 从 [Releases](https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.2.0)
-   下载 `H3VR2存档编辑器_v0.2.0_Windows便携版.zip`。
+   下载 `H3VR2-Save-Editor-v0.2.0-Windows-Portable.zip`。
+   Release 资产使用 ASCII 文件名以兼容各平台；解压后的目录与包内说明均为中文。
 2. **把整个压缩包解压到一个文件夹**（不要只解压单个文件；支持含中文的路径）。
 3. 双击 `启动存档编辑器.bat`；若窗口没出现，改双击 `启动-调试模式.bat` 看报错。
 
