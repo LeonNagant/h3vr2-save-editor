@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 玩家存档、设备备份、运行产物 —— 绝不入库
+exports/*/
+backups/*/
+*.json.gz
+.last_export_path
+field_catalog.json
+cold_start_check.png
+config.local.json
+
+# 打包与验证临时产物
+_pack*.py
+_verify*.py
+_check*.py
+_verify/
+*.zip
+*.7z
+
+# 编辑器 / 系统
+.idea/
+.vscode/
+Thumbs.db
+desktop.ini

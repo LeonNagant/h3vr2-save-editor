@@ -1,0 +1,22 @@
+H3VR2 存档编辑器
+================
+
+当前版本：v0.2.0（修订版）
+发布日期：2026-11-15
+仓库：https://github.com/LeonNagant/h3vr2-save-editor
+项目页：https://leonnagant.github.io/h3vr2-save-editor/
+下载：https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.2.0
+
+v0.2.0 功能
+- 商店编辑内容、玩家仓库编辑内容可保存为预设（presets.json），与每次导出的存档分离
+- 导出新存档后一键还原预设，或设为自动应用
+- 玩家仓库（Inventory.json.gz）可自行编辑：换物品、改占格、复制 / 删除 / 新增槽位
+- 物品收藏夹：只看收藏、批量加入商店或仓库
+- 修订：修复中文路径下「一键导出」失败（adb 不接触本地路径）
+- 修订：默认包名收敛为官方包名 com.rustltd.h3vr2，不预置任何非官方包名；
+  仅用户点击「自动探测」后才枚举设备上真实存在的包名供手动选择
+
+验证：单元测试 81/81 通过；GUI 七个标签页真实启动；商店与仓库改动经真机
+冷启动验证；发布包脱敏扫描 0 命中，不含玩家存档数据。
+
+本项目使用 AI 生成辅助，详见 README.md 与 DISCLAIMER.md。

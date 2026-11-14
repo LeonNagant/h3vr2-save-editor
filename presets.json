@@ -1,0 +1,76 @@
+{
+  "version": 2,
+  "settings": {
+    "store_auto_preset": "示例：低价常用装备",
+    "store_auto_mode": "replace",
+    "inventory_auto_preset": "",
+    "inventory_auto_mode": "append",
+    "default_store_price": 1,
+    "default_section": "basics"
+  },
+  "store_presets": {
+    "示例：低价常用装备": {
+      "note": "示例预设：可直接改 item / price / sectionID，或在界面点「保存当前为预设」新建自己的预设",
+      "store": "extref://footlong.base/Store/Store_Starter",
+      "boxes": [
+        {
+          "item": "extref://footlong.base/M4A1",
+          "sectionID": "basics",
+          "price": 1
+        },
+        {
+          "item": "extref://footlong.base/Item/Belt_Tac_Veteran",
+          "sectionID": "basics",
+          "price": 1
+        },
+        {
+          "item": "extref://footlong.base/Item/MapR",
+          "sectionID": "basics",
+          "price": 1
+        },
+        {
+          "item": "extref://footlong.base/MustardContainer_Large",
+          "sectionID": "basics",
+          "price": 1
+        }
+      ]
+    }
+  },
+  "inventory_presets": {
+    "示例：基础补给": {
+      "note": "示例预设：一键把这些物品补进玩家仓库；size 是占格 [宽,高]",
+      "items": [
+        {
+          "item": "extref://footlong.base/Item/MapR",
+          "size": [
+            1,
+            1
+          ]
+        },
+        {
+          "item": "extref://footlong.base/MustardContainer_Large",
+          "size": [
+            1,
+            1
+          ]
+        },
+        {
+          "item": "extref://footlong.base/Item/Belt_Tac_Veteran",
+          "size": [
+            1,
+            1
+          ]
+        }
+      ]
+    }
+  },
+  "favorites": [
+    "extref://footlong.base/Item/MapR",
+    "extref://footlong.base/M4A1",
+    "extref://footlong.base/Magazine_PMWindow_30rd",
+    "extref://footlong.base/Item/SosigBackpack_HEDCSling",
+    "extref://footlong.base/Item/OperatorRiflerRig",
+    "extref://footlong.base/Item/Belt_Tac_Veteran",
+    "extref://footlong.base/Round_556x45mm_AP_M855A1"
+  ]
+}

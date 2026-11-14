@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="H3VR2 存档编辑器：面向 Meta Quest 单机存档的非官方第三方编辑工具。编辑全部参数、商店出售物品与价格、玩家仓库；一键导出与回传。Windows 便携版，零依赖。">
+<meta name="keywords" content="H3VR2, 存档编辑器, Quest, 单机存档, 商店编辑, 仓库编辑, 预设, 开源">
+<title>H3VR2 存档编辑器 · v0.2.0</title>
+<style>
+  :root{
+    --ink:#0f172a; --muted:#5b6b80; --line:#dfe6ef; --bg:#f5f8fc;
+    --card:#ffffff; --accent:#0d9488; --accent-dark:#0b6f68;
+    --amber:#b45309; --amber-bg:#fffbeb; --amber-line:#fcd34d;
+    --hero1:#0b1a2b; --hero2:#155e63; --code:#0d1b2a;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Noto Sans CJK SC",
+                   -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+       line-height:1.75;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent-dark);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+  header.nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);
+            backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;
+          gap:16px;max-width:1080px;margin:0 auto;padding:11px 22px;flex-wrap:wrap}
+  .brand{font-weight:700;font-size:16px;color:var(--ink);letter-spacing:.2px}
+  .brand span{color:var(--accent)}
+  .nav-links{display:flex;gap:18px;flex-wrap:wrap;font-size:14px}
+  .nav-links a{color:var(--muted)}
+  .nav-links a:hover{color:var(--accent-dark)}
+  .hero{background:linear-gradient(135deg,var(--hero1) 0%,var(--hero2) 100%);
+        color:#eaf4f6;padding:66px 0 58px}
+  .hero h1{margin:0 0 12px;font-size:38px;line-height:1.3;letter-spacing:.5px}
+  .hero .sub{margin:0 0 8px;font-size:17px;color:#bfe3e2;max-width:760px}
+  .hero .meta{margin:14px 0 26px;font-size:14px;color:#9fc9c9}
+  .tag{display:inline-block;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.24);
+       border-radius:999px;padding:3px 12px;margin:0 8px 8px 0;font-size:13px;color:#e6fbf8}
+  .btns{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-block;padding:11px 22px;border-radius:8px;font-weight:600;
+       font-size:15px;border:1px solid transparent;transition:.18s}
+  .btn-primary{background:#fff;color:var(--hero1)}
+  .btn-primary:hover{background:#d7f5f1;text-decoration:none;transform:translateY(-1px)}
+  .btn-ghost{border-color:rgba(255,255,255,.5);color:#eaf4f6}
+  .btn-ghost:hover{background:rgba(255,255,255,.12);text-decoration:none}
+  section{padding:46px 0}
+  h2{font-size:25px;margin:0 0 8px;letter-spacing:.3px}
+  h2::before{content:"";display:inline-block;width:4px;height:20px;background:var(--accent);
+             border-radius:2px;margin-right:10px;vertical-align:-3px}
+  .lead{color:var(--muted);margin:0 0 24px;max-width:820px}
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+        padding:20px 22px;box-shadow:0 2px 10px rgba(15,23,42,.04)}
+  .card h3{margin:0 0 8px;font-size:17px}
+  .card p{margin:0;color:var(--muted);font-size:14.5px}
+  .card .num{display:inline-flex;align-items:center;justify-content:center;
+             width:28px;height:28px;border-radius:8px;background:#e6f7f4;
+             color:var(--accent-dark);font-weight:700;font-size:14px;margin-bottom:10px}
+  .notice{border-left:4px solid var(--accent);background:#f0fbf9;border-radius:0 10px 10px 0;
+          padding:16px 20px;margin:0 0 16px}
+  .notice.amber{border-left-color:var(--amber-line);background:var(--amber-bg)}
+  .notice h3{margin:0 0 6px;font-size:16px}
+  .notice p{margin:0;font-size:14.5px;color:#41556b}
+  .notice.amber p{color:#7c5210}
+  .steps{counter-reset:s;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+  .step .n{display:inline-block;background:var(--hero1);color:#fff;border-radius:7px;
+           padding:2px 10px;font-weight:700;font-size:14px;margin-bottom:10px}
+  .step h3{margin:0 0 6px;font-size:16px}
+  .step p{margin:0;color:var(--muted);font-size:14px}
+  pre{background:var(--code);color:#d7e7f2;border-radius:10px;padding:16px 18px;
+      overflow:auto;font-size:13px;line-height:1.6;
+      font-family:Consolas,"Cascadia Code","Source Han Mono",monospace}
+  code{font-family:Consolas,"Cascadia Code",monospace;background:#eef3f8;
+       color:#0b5963;border-radius:4px;padding:1px 5px;font-size:.92em}
+  pre code{background:none;color:inherit;padding:0}
+  table{width:100%;border-collapse:collapse;background:var(--card);
+        border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:14.5px}
+  th,td{padding:11px 14px;border-bottom:1px solid var(--line);text-align:left}
+  th{background:#eef4fa;color:#31445c;font-weight:600}
+  tr:last-child td{border-bottom:none}
+  ul.clean{margin:0;padding-left:20px;color:var(--muted);font-size:14.5px}
+  ul.clean li{margin:5px 0}
+  .footer{background:#0f1e2e;color:#a9bfd0;padding:32px 0;font-size:13.5px}
+  .footer a{color:#7fd8ce}
+  .footer .cols{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
+  .footer strong{color:#e6f2f7}
+  .pill{display:inline-block;background:#e6f7f4;color:var(--accent-dark);
+        border-radius:6px;padding:1px 8px;font-size:13px;font-weight:600}
+  @media(max-width:820px){
+    .g2,.g3,.steps{grid-template-columns:1fr}
+    .hero h1{font-size:29px}
+    section{padding:34px 0}
+    .nav-links{gap:12px;font-size:13px}
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <div class="brand">H3VR2 <span>存档编辑器</span></div>
+    <nav class="nav-links">
+      <a href="#features">功能</a>
+      <a href="#start">使用方法</a>
+      <a href="#presets">预设与收藏</a>
+      <a href="#package">包名策略</a>
+      <a href="#version">版本与下载</a>
+      <a href="https://github.com/LeonNagant/h3vr2-save-editor">GitHub 仓库</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <h1>H3VR2 存档编辑器</h1>
+    <p class="sub">面向 Meta Quest 上 H3VR2 <strong>单机存档</strong>的非官方第三方编辑工具：
+       改全部参数、商店出售物品与价格、玩家仓库物品；一键导出、一键回传，并让改动真正生效。</p>
+    <div>
+      <span class="tag">v0.2.0 修订版</span>
+      <span class="tag">Windows 便携版</span>
+      <span class="tag">零第三方依赖</span>
+      <span class="tag">MIT License</span>
+      <span class="tag">AI 生成辅助</span>
+    </div>
+    <p class="meta">发布日期 2026-11-15 · 自带 Python 3.10.5 与 adb · 不需要安装任何环境</p>
+    <div class="btns">
+      <a class="btn btn-primary" href="https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.2.0">下载 v0.2.0 便携版</a>
+      <a class="btn btn-ghost" href="https://github.com/LeonNagant/h3vr2-save-editor#readme">阅读完整文档</a>
+    </div>
+  </div>
+</div>
+
+<section id="about">
+  <div class="wrap">
+    <div class="notice">
+      <h3>本项目使用 AI 生成辅助</h3>
+      <p>仓库中的源代码、物品目录、字段说明、技术文档、使用说明、发布说明以及本
+         GitHub Pages 页面，均由 AI 辅助生成，并经人工审阅、单元测试（81/81 通过）
+         与真机往返验证后发布。AI 生成内容可能存在错误或与实际版本不一致之处，
+         请以自己导出的存档为准，操作前自行备份。</p>
+    </div>
+    <div class="notice amber">
+      <h3>非官方 · 仅用于自己的单机存档</h3>
+      <p>本项目与游戏开发者、发行方、平台方无任何关联，也未获授权或认可。
+         只读写设备上的存档 JSON，不修改游戏 APK / OBB，不绕过授权或内购，
+         不收集或上传任何数据。请勿用于在线 / 联机功能。</p>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <h2>功能</h2>
+    <p class="lead">从一份 gzip 压缩的 JSON 存档里，把资源、经验、商店货位、仓库槽位
+       全部变成可读、可编辑的字段；并把「改完不生效」的链路一并处理好。</p>
+    <div class="grid g3">
+      <div class="card"><h3>全部参数</h3><p>树形页逐字段双击改值、右键增删节点；「原始 JSON」页可整段编辑，1296 个叶子字段都能改。</p></div>
+      <div class="card"><h3>商店编辑</h3><p>列出全部货位，搜索 666 种物品改出售物品、售价与分区；增删货位、打折、统一定价。</p></div>
+      <div class="card"><h3>仓库编辑</h3><p>多页 12×8 网格：换物品、改占格、清空组件、复制 / 删除 / 新增槽位，页满自动开新页。</p></div>
+      <div class="card"><h3>预设与自动还原</h3><p>编辑内容存在独立的 <code>presets.json</code>，导出新存档后一键还原，不必重新编辑。</p></div>
+      <div class="card"><h3>收藏</h3><p>常用物品加星，物品选择框「只看收藏」快速定位，可批量加入商店或仓库。</p></div>
+      <div class="card"><h3>一键导出 / 回传</h3><p>USB 或无线 adb 导出到本机；回传自动停游戏 → 备份 → 推送 → 校验 → 冷启动读档。</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="start">
+  <div class="wrap">
+    <h2>使用方法</h2>
+    <p class="lead">便携版解压后双击「启动存档编辑器.bat」即可；连接头显后按三步操作。</p>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><h3>连接并导出</h3>
+        <p>USB 数据线连接（或先「USB→启用无线调试」），点「刷新设备」选中头显，
+           再点「① 一键导出存档」。</p></div>
+      <div class="step"><div class="n">2</div><h3>编辑</h3>
+        <p>7 个标签页里改数值、商店、仓库；或直接套用预设。点「② 保存到本地」写盘。</p></div>
+      <div class="step"><div class="n">3</div><h3>回传生效</h3>
+        <p>点「③ 一键回传到头显」。程序强制停止游戏、备份、推送、<code>chmod 666</code>、
+           md5 校验并冷启动。</p></div>
+    </div>
+    <div class="notice" style="margin-top:20px">
+      <h3>为什么必须停游戏再冷启动</h3>
+      <p>游戏只在<strong>启动时读档</strong>；运行中界面数值来自内存，跑图与结算会把
+         内存旧值写回文件，直接推送会被覆盖。底部「回传前停止游戏并冷启动」开关
+         默认开启，请勿关闭。出问题可点「恢复最近备份」回滚。</p>
+    </div>
+  </div>
+</section>
+
+<section id="presets">
+  <div class="wrap">
+    <h2>预设：导出新存档后不用重新编辑</h2>
+    <p class="lead">每次从设备重新导出的都是设备上的新内容，之前改好的商店与仓库不会
+       自动跟过来。预设把「编辑内容」单独存到程序目录，与存档分离。</p>
+    <div class="grid g2">
+      <div class="card">
+        <h3>怎么用</h3>
+        <ul class="clean">
+          <li>改好商店或仓库 → 点「保存当前为预设」。</li>
+          <li>之后导出新存档 → 选预设点「一键应用（替换）」；或在「收藏与预设」页设为自动应用。</li>
+          <li>「追加物品」在不删除现有货位 / 槽位的前提下批量加入。</li>
+          <li>预设可导出成一份 JSON 分享，也可用记事本直接编辑。</li>
+        </ul>
+      </div>
+      <div>
+<pre><code>{
+  "version": 2,
+  "settings": {
+    "store_auto_preset": "我的常用商店",
+    "store_auto_mode": "replace"
+  },
+  "store_presets": {
+    "我的常用商店": {
+      "boxes": [
+        {"item": "M4A1", "price": 1,
+         "sectionID": "basics"}
+      ]
+    }
+  },
+  "inventory_presets": {
+    "常用补给": {
+      "items": [{"item": "MapR",
+                 "size": [1, 1]}]
+    }
+  },
+  "favorites": ["MapR"]
+}</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="package">
+  <div class="wrap">
+    <h2>包名与兼容策略</h2>
+    <div class="notice amber">
+      <h3>默认且仅列出官方包名 <code>com.rustltd.h3vr2</code></h3>
+      <p>本仓库的源码、配置、文档与项目页面不预置、不列举、不推荐任何被修改包名后
+         分发的第三方版本；对付费汉化及改包分发不提供支持、不鼓励、不宣传。
+         请使用合法取得的游戏副本。本仓库不提供、不托管、不链接任何游戏安装包、
+         OBB 数据或汉化资源。</p>
+    </div>
+    <div class="card">
+      <h3>如果设备上的包名与官方不同</h3>
+      <p>点界面「<strong>自动探测</strong>」，程序会枚举设备
+         <code>/sdcard/Android/data</code> 下真实存在的游戏包名与存档槽
+         （<code>Profile0</code> = Slot 1），列出后由你手动选中并「保存配置」。
+         这是设备侧的通用兼容能力，<strong>不是对任何第三方发行版的推荐</strong>。</p>
+      <ul class="clean" style="margin-top:10px">
+        <li>程序启动时不会静默枚举设备包名；</li>
+        <li>默认配置、下拉框初始值与兜底候选都只有官方包名；</li>
+        <li>配置里已指定包名时，导出 / 回传不会在未经你操作的情况下自动切换目标。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="version">
+  <div class="wrap">
+    <h2>版本信息与下载</h2>
+    <table>
+      <tr><th style="width:180px">项目</th><th>内容</th></tr>
+      <tr><td>当前版本</td><td><span class="pill">v0.2.0 修订版</span></td></tr>
+      <tr><td>发布日期</td><td>2026-11-15</td></tr>
+      <tr><td>适用平台</td><td>Windows 10/11 64 位 + Meta Quest（已开启开发者模式 / USB 调试）</td></tr>
+      <tr><td>运行环境</td><td>便携版自带 Python 3.10.5（含 tkinter）与 adb，零第三方 pip 依赖</td></tr>
+      <tr><td>下载</td><td><a href="https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.2.0">Releases · v0.2.0</a> → <code>H3VR2存档编辑器_v0.2.0_Windows便携版.zip</code></td></tr>
+      <tr><td>源码 / 更新日志</td><td><a href="https://github.com/LeonNagant/h3vr2-save-editor">GitHub 仓库</a> · <a href="https://github.com/LeonNagant/h3vr2-save-editor/blob/main/CHANGELOG.md">CHANGELOG.md</a></td></tr>
+      <tr><td>许可</td><td>MIT（仅覆盖本仓库原创代码与文档；内附 Python / adb 遵循各自许可证）</td></tr>
+    </table>
+    <p class="lead" style="margin-top:18px">v0.2.0 新增预设与自动还原、玩家仓库编辑、收藏；
+       修复中文路径下导出失败（让 adb 不接触本地路径）与默认包名收敛。
+       v0.1.0 为首个公开版本，含存档解析、GUI、商店编辑与一键导出 / 回传。</p>
+  </div>
+</section>
+
+<section id="verify">
+  <div class="wrap">
+    <h2>验证与边界</h2>
+    <div class="grid g2">
+      <div class="card"><h3>已验证</h3>
+        <ul class="clean">
+          <li>单元测试 81/81 通过（含中文路径导出 7 项、默认包名约束 6 项回归及反例）。</li>
+          <li>GUI 真实启动 7 个标签页；全新中文目录解压后用自带 runtime 启动成功。</li>
+          <li>商店价格与出售物品、仓库新增物件经真机「停游戏 → 回传 → 冷启动 → 重新导出」验证被接受。</li>
+          <li>发布包 <code>testzip</code> 通过、1959 条目；脱敏扫描 0 命中，不含玩家存档数据。</li>
+        </ul>
+      </div>
+      <div class="card"><h3>已知边界</h3>
+        <ul class="clean">
+          <li>VR 渲染层无法截屏，商店与仓库在游戏界面里的实际显示需在头显内肉眼确认；文件层、读档层与冷启动回读均已验证。</li>
+          <li>物品请用目录中标记「已验证」的引用；编造不存在的 <code>extref</code> 可能导致读档失败。</li>
+          <li>游戏版本更新后存档结构可能变化，本项目不保证适配未来版本。</li>
+          <li>修改存档有风险，请自行留存完整原档。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="footer">
+  <div class="wrap cols">
+    <div>
+      <div><strong>H3VR2 存档编辑器</strong> · v0.2.0 · 非官方第三方工具</div>
+      <div style="margin-top:6px">本项目使用 <strong>AI 生成辅助</strong>，经人工审阅与真机验证后发布。</div>
+      <div style="margin-top:6px">游戏名称与商标归各自权利人所有；本项目与其无关联、未获授权。</div>
+    </div>
+    <div>
+      <div><a href="https://github.com/LeonNagant/h3vr2-save-editor">GitHub 仓库</a></div>
+      <div><a href="https://github.com/LeonNagant/h3vr2-save-editor/blob/main/DISCLAIMER.md">免责声明</a></div>
+      <div><a href="https://github.com/LeonNagant/h3vr2-save-editor/blob/main/CONTRIBUTING.md">贡献指南</a></div>
+      <div><a href="https://github.com/LeonNagant/h3vr2-save-editor/releases">全部版本</a></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

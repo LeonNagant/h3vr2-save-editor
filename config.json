@@ -1,0 +1,28 @@
+{
+  "adb_path": "",
+  "wifi_ip": "",
+  "wifi_port": 5555,
+  "package": "com.rustltd.h3vr2",
+  "package_fallbacks": [
+    "com.rustltd.h3vr2"
+  ],
+  "profile": "Profile0",
+  "save_subdir": "footlong.base",
+  "export_root": "exports",
+  "backup_root": "backups",
+  "lan_scan_enabled": true,
+  "lan_subnet": "",
+  "lan_scan_port": 5555,
+  "lan_scan_timeout_ms": 400,
+  "auto_backup": true,
+  "chmod_after_push": true,
+  "verify_after_push": true,
+  "wake_before_action": true,
+  "connect_before_action": true,
+  "push_only_modified": true,
+  "skip_invalid_files": [],
+  "stop_game_before_push": true,
+  "relaunch_after_push": true,
+  "items_catalog": "items_catalog.json",
+  "presets_file": "presets.json"
+}
