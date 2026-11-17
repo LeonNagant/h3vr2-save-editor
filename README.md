@@ -1,6 +1,6 @@
 # H3VR2 存档编辑器
 
-[![version](https://img.shields.io/badge/version-v0.2.0-blue)](#3-版本信息与下载) · [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE) · [![python](https://img.shields.io/badge/python-3.10%2B-blue)](#4-快速开始) · [项目页](https://leonnagant.github.io/h3vr2-save-editor/) · [下载 v0.2.0](https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.2.0)
+[![version](https://img.shields.io/badge/version-v0.3.0-blue)](#3-版本信息与下载) · [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE) · [![python](https://img.shields.io/badge/python-3.10%2B-blue)](#4-快速开始) · [项目页](https://leonnagant.github.io/h3vr2-save-editor/) · [下载 v0.3.0](https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.3.0)
 
 面向 Meta Quest 上 **H3VR2 单机存档** 的非官方第三方编辑工具：可编辑存档内全部
 参数、商店出售物品与价格、玩家仓库物品；一键从 USB / 无线 adb 导出存档，
@@ -72,23 +72,24 @@ gzip 压缩的 JSON 保存在头显上。本项目把这些文件解析成可读
 
 | 项目 | 内容 |
 |---|---|
-| 当前版本 | **v0.2.0（修订版）** |
-| 发布日期 | 2026-11-15 |
-| 适用平台 | Windows 10/11 64 位 + Meta Quest（已开启开发者模式 / USB 调试） |
+| 当前版本 | **v0.3.0** |
+| 发布日期 | 2026-11-17 |
+| 适用平台 | Windows 10/11 64 位 + Meta Quest（已开启开发者模式 / USB 调试）；含 PC 端 Venture 模拟器 |
 | 运行环境 | 便携版自带 Python 3.10.5（含 tkinter）与 adb；零第三方 pip 依赖 |
-| 下载 | [GitHub Releases · v0.2.0](https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.2.0) → `H3VR2-Save-Editor-v0.2.0-Windows-Portable.zip` |
+| 下载 | [GitHub Releases · v0.3.0](https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.3.0) → `H3VR2-Save-Editor-v0.3.0-Windows-Portable.zip` |
 | 项目页 | [GitHub Pages](https://leonnagant.github.io/h3vr2-save-editor/) |
 | 更新日志 | [CHANGELOG.md](CHANGELOG.md) · [VERSION.txt](VERSION.txt) |
 
-v0.2.0 相比 v0.1.0 新增预设 / 自动还原 / 仓库编辑 / 收藏，并修复了中文路径下
-导出失败的问题；详细条目见 [CHANGELOG.md](CHANGELOG.md)。
+v0.3.0 由社区贡献者 Niko666233 通过 PR #1 新增 Venture 模拟器存档支持（自动
+查找 / 手动选目录 / 直接写回 + 备份）；v0.2.0 新增预设 / 自动还原 / 仓库编辑 /
+收藏，并修复了中文路径下导出失败的问题；详细条目见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 4. 快速开始
 
 ### 方式 A：Windows 便携版（推荐，普通用户）
 
-1. 从 [Releases](https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.2.0)
-   下载 `H3VR2-Save-Editor-v0.2.0-Windows-Portable.zip`。
+1. 从 [Releases](https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.3.0)
+   下载 `H3VR2-Save-Editor-v0.3.0-Windows-Portable.zip`。
    Release 资产使用 ASCII 文件名以兼容各平台；解压后的目录与包内说明均为中文。
 2. **把整个压缩包解压到一个文件夹**（不要只解压单个文件；支持含中文的路径）。
 3. 双击 `启动存档编辑器.bat`；若窗口没出现，改双击 `启动-调试模式.bat` 看报错。
@@ -280,7 +281,7 @@ Venture 模拟器（PC 端）：
 | 现象 | 处理 |
 |---|---|
 | 改完没效果 | 确认底部「回传前停止游戏并冷启动」已开启；游戏只在启动读档 |
-| 导出报 `Not a directory` 或只出现 `footlo` 空目录 | 使用 v0.2.0 修订版；该版让 adb 不接触本地路径，中文路径与中文文件名均正常 |
+| 导出报 `Not a directory` 或只出现 `footlo` 空目录 | 使用 v0.2.0 及以上版本；该版让 adb 不接触本地路径，中文路径与中文文件名均正常 |
 | 游戏卡在加载页 | 多半是权限问题，确认 `chmod_after_push=true`；用「恢复最近备份」回滚 |
 | 头显待机后失联 | 点「唤醒头显」或「扫描局域网」；重启头显后需 USB 重新部署无线调试 |
 | GUI 打不开 | Python 必须自带 tkinter；便携版直接用 `启动存档编辑器.bat` |
@@ -314,7 +315,7 @@ py -3.10 test_core.py --device    # 单元 + 真机只读往返（回传原样�
 > VR 渲染层无法截屏，商店与仓库在游戏界面里的实际显示需在头显内肉眼确认；
 > 文件层、读档层与冷启动回读均已验证。
 
-**未发布改动（Venture 模拟器支持）**
+**Venture 模拟器支持（v0.3.0 新增，社区贡献）**
 
 - 单元测试 **98/98 通过**：新增 17 项 Venture 回归——目录自动发现（官方包名
   优先、最近写入优先、无关目录不入结果）、手动选路径在 `footlong.base` /
@@ -370,4 +371,4 @@ py -3.10 test_core.py --device    # 单元 + 真机只读往返（回传原样�
 
 ---
 
-*最后更新：2026-11-15 · v0.2.0（修订版）*
+*最后更新：2026-11-17 · v0.3.0*

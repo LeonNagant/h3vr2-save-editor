@@ -1,11 +1,13 @@
 # 更新日志
 
-本项目遵循 `vMAJOR.MINOR.PATCH` 版本号。当前稳定版：**v0.2.0**。
+本项目遵循 `vMAJOR.MINOR.PATCH` 版本号。当前稳定版：**v0.3.0**。
 每个版本的 Windows 便携版见 [Releases](https://github.com/LeonNagant/h3vr2-save-editor/releases)。
 
 ---
 
-## 未发布
+## v0.3.0 — 2026-11-17
+
+> 本版本由社区贡献者 Niko666233 通过 PR #1 提供，已合并并本地回归验证。
 
 ### 新增
 

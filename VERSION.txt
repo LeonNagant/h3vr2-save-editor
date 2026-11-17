@@ -1,22 +1,26 @@
 H3VR2 存档编辑器
 ================
 
-当前版本：v0.2.0（修订版）
-发布日期：2026-11-15
+当前版本：v0.3.0
+发布日期：2026-11-17
 仓库：https://github.com/LeonNagant/h3vr2-save-editor
 项目页：https://leonnagant.github.io/h3vr2-save-editor/
-下载：https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.2.0
+下载：https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.3.0
 
-v0.2.0 功能
-- 商店编辑内容、玩家仓库编辑内容可保存为预设（presets.json），与每次导出的存档分离
-- 导出新存档后一键还原预设，或设为自动应用
-- 玩家仓库（Inventory.json.gz）可自行编辑：换物品、改占格、复制 / 删除 / 新增槽位
-- 物品收藏夹：只看收藏、批量加入商店或仓库
-- 修订：修复中文路径下「一键导出」失败（adb 不接触本地路径）
-- 修订：默认包名收敛为官方包名 com.rustltd.h3vr2，不预置任何非官方包名；
-  仅用户点击「自动探测」后才枚举设备上真实存在的包名供手动选择
+v0.3.0 功能（社区贡献者 Niko666233 通过 PR #1 提供）
+- Venture 模拟器（PC 端）存档支持：自动查找本机 Venture 存档并直接读写，
+  无需 adb；也能「手动选择存档目录」定位 footlong.base / Profile0 / SaveData
+- 「存档来源」栏随来源切换「②」按钮文案；写回前自动备份、写盘后逐文件校验
+- 官方包名优先、最近写入优先排序；非官方包名需二次确认才载入（沿用包名政策）
+- 快捷编辑页支持滚轮滚动、内容宽度随窗口，矮窗口下不再遮挡底部说明
+- 新增配置项 venture_root / venture_auto_detect / venture_backup_on_save
 
-验证：单元测试 81/81 通过；GUI 七个标签页真实启动；商店与仓库改动经真机
-冷启动验证；发布包脱敏扫描 0 命中，不含玩家存档数据。
+历史版本
+- v0.2.0：预设 / 自动还原 / 玩家仓库编辑 / 收藏；修复中文路径下导出失败；
+  默认包名收敛为官方包名 com.rustltd.h3vr2，仅「自动探测」后枚举设备真实包名
+- v0.1.0：全参数编辑、商店物品与价格编辑、一键 USB / 局域网导出与回传
+
+验证：合并后单元测试 98/98 通过（含 17 项 Venture 回归）；发布包脱敏扫描
+0 命中，不含玩家存档数据。头显 adb 链路本版本未改动、未做真机复测。
 
 本项目使用 AI 生成辅助，详见 README.md 与 DISCLAIMER.md。

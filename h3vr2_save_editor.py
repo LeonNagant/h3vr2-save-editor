@@ -159,7 +159,7 @@ def pick_item(parent, app, title="选择物品", current_ref="") -> str | None:
 class App:
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("H3VR2 存档编辑器 v0.2.0  ·  Slot 1 / Profile0")
+        self.root.title("H3VR2 存档编辑器 v0.3.0  ·  Slot 1 / Profile0")
         self.root.geometry("1400x940")
         self.root.minsize(1120, 720)
 
@@ -359,7 +359,7 @@ class App:
         self.log("Venture 模拟器：点「查找 Venture 存档」直接找本机存档（无需 adb），"
                  "改完点「② 保存到 Venture 存档」即写回，保存前自动备份。")
         self.log("手动存档：点「手动选择存档目录…」，选 footlong.base / Profile0 / SaveData 均可。")
-        self.log("v0.2.0 新增：商店/仓库编辑内容可「保存当前为预设」；在「★ 收藏与预设」页设好自动应用后，")
+        self.log("预设 / 自动应用：在「★ 收藏与预设」页设好后，")
         self.log("　　　　　　每次导出新存档会自动还原编辑内容，无需重新编辑；物品选择框可勾「只看 ★ 收藏」。")
 
     def _quick_wheel(self, e):
