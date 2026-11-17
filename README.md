@@ -57,6 +57,8 @@ gzip 压缩的 JSON 保存在头显上。本项目把这些文件解析成可读
 | 收藏 | 「只看 ★ 收藏」快速定位；收藏可批量加入商店（统一售价）或仓库 |
 | 一键导出 | 枚举 USB / 无线 adb 设备、扫描局域网 5555 端口，导出到 `exports/<时间戳>/` |
 | 一键回传 | 强制停止游戏 → 备份 → 推送 → `chmod 666` → md5 校验 → 冷启动重新读档 |
+| Venture 存档 | 自动查找 PC 端 Venture 模拟器里的 H3VR2 存档并直接读写，无需 adb；保存前自动备份 |
+| 手动目录 | 自动查找失败或玩家自己从别处提取了存档时，手选 `footlong.base` / `Profile0` / `SaveData` 均可 |
 | 回滚 | 「恢复最近备份」把 `backups/<时间戳>/` 的原档推回设备 |
 
 界面共 **7 个标签页**：快捷编辑、商店编辑、仓库编辑、★ 收藏与预设、
@@ -129,6 +131,32 @@ py -3.10 h3vr2_save_editor.py        # Windows 也可双击 run_editor.bat
 > 「③」会自动先把内存里的修改写盘，因此「②」可以跳过；但建议保留，
 > 便于推送前用文件管理器核对。
 
+### 在 Venture 模拟器上改存档（PC 端，不需要 adb）
+
+[Venture](https://github.com/Villagers654/Venture) 把 Quest 游戏当普通 PC 程序跑，
+存档因此是**本机的普通目录**而不是头显上的 `/sdcard`：
+
+```
+%LOCALAPPDATA%\Venture\data\users\<账号 ID>\com.rustltd.h3vr2\external-data\files\SaveData\Profile0\footlong.base
+```
+
+1. 点「**查找 Venture 存档**」。程序按上面的默认位置自动搜索（也在 Linux 的
+   XDG / Flatpak 位置找）；找到多份（多账号 / 多槽位）时弹出列表让你选，
+   按「官方包名优先 + 最近写入优先」排序。
+2. 载入后「存档来源」一栏会写明账号、槽位与目录，按钮变成
+   「**② 保存到 Venture 存档**」——直接写回该目录，不走 adb。
+3. 保存前自动把原文件备份到 `backups/venture_<时间戳>/`，写盘后逐个回读校验。
+   「恢复最近备份」会把最近一份备份复制回该目录。
+
+> 模拟器与头显一样只在**启动时读档**：请先在 Venture 里退出游戏再保存。
+> 程序会提示「检测到相关进程正在运行」，但不会替你结束进程。
+
+找不到时用「**手动选择存档目录…**」：选 `footlong.base`、`Profile0`、`SaveData`、
+账号目录甚至 Venture 根目录都能定位（程序逐层往下找，最多探 8 层并限制访问量）。
+若目录在 Venture 数据目录内，自动按 Venture 模式处理；否则按普通本地目录处理
+（保存只写本地，回头显仍需「③ 一键回传到头显」）。也可在 `config.json` 的
+`venture_root` 直接指定 Venture 数据目录。
+
 ### 预设：导出新存档后不用重新编辑
 
 存档每次从设备重新导出都是设备上的新内容，之前改好的商店 / 仓库不会自动跟过来。
@@ -185,6 +213,10 @@ py -3.10 h3vr2_save_editor.py        # Windows 也可双击 run_editor.bat
 
 设备端：`/sdcard/Android/data/<包名>/files/SaveData/Profile0/footlong.base/*.json.gz`
 
+Venture 模拟器（PC 端）：
+`%LOCALAPPDATA%\Venture\data\users\<账号 ID>\<包名>\external-data\files\SaveData\Profile0\footlong.base\*.json.gz`
+—— 内容与设备端完全等价，程序直接当本地目录读写。
+
 每个文件是**标准 gzip**（头 `1f8b 08 00 00000000 00 03`，即 .NET `GZipStream`
 默认输出）包裹的 **UTF-8 紧凑 JSON**，统一 `{"Version":0,"Data":{...}}`。
 一次实测导出 18 个文件 / 7215 字节；物品引用形如
@@ -228,6 +260,9 @@ py -3.10 h3vr2_save_editor.py        # Windows 也可双击 run_editor.bat
 | `wake_before_action` / `connect_before_action` | `true` | 操作前唤醒头显 / 自动 `adb connect` |
 | `export_root` / `backup_root` | `exports` / `backups` | 导出与备份根目录 |
 | `items_catalog` / `presets_file` | `items_catalog.json` / `presets.json` | 物品目录 / 预设收藏文件 |
+| `venture_root` | `""` | Venture 数据根目录；留空自动查 `%LOCALAPPDATA%\Venture` 与 Linux 的 XDG / Flatpak 位置 |
+| `venture_auto_detect` | `true` | 启动时自动查找并载入 Venture 存档（优先于上一次导出快照） |
+| `venture_backup_on_save` | `true` | 写回 Venture 存档前自动备份原文件到 `backup_root/venture_<时间戳>/` |
 
 ## 9. 生效原理、风险与回滚
 
@@ -251,6 +286,9 @@ py -3.10 h3vr2_save_editor.py        # Windows 也可双击 run_editor.bat
 | GUI 打不开 | Python 必须自带 tkinter；便携版直接用 `启动存档编辑器.bat` |
 | 商店 / 仓库改了又没了 | 重新导出的是设备上的新存档；用预设「一键应用」或开启自动应用 |
 | 包名与默认不同 | 点「自动探测」选中设备上的真实包名并「保存配置」，见 [§6](#6-包名与兼容策略) |
+| 找不到 Venture 存档 | 确认在 Venture 里装过并至少运行过一次游戏；或 `config.json` 填 `venture_root`；或用「手动选择存档目录」选到 `footlong.base` |
+| Venture 里改了没生效 | 游戏只在启动时读档：先在 Venture 里退出游戏再「保存到 Venture 存档」，然后重新启动游戏 |
+| 手选的目录提示没有存档 | 选到 `footlong.base` 或它的上一层（`Profile0` / `SaveData`）；程序也会自己往下找，但视频/图片等杂物目录里没有 `*.json.gz` |
 
 ## 11. 开发与验证
 
@@ -275,6 +313,24 @@ py -3.10 test_core.py --device    # 单元 + 真机只读往返（回传原样�
 
 > VR 渲染层无法截屏，商店与仓库在游戏界面里的实际显示需在头显内肉眼确认；
 > 文件层、读档层与冷启动回读均已验证。
+
+**未发布改动（Venture 模拟器支持）**
+
+- 单元测试 **98/98 通过**：新增 17 项 Venture 回归——目录自动发现（官方包名
+  优先、最近写入优先、无关目录不入结果）、手动选路径在 `footlong.base` /
+  槽位 / `SaveData` / 账号目录四层都能定位、写回生效、保存前备份是改动前原档、
+  不影响其他账号的存档、目录不存在时报错可读。全部用仿真目录树覆盖，
+  不依赖本机是否装了 Venture。
+- GUI：见「存档来源」栏在真实 Venture 存档上启动即自动载入（17 个文件），
+  按钮随来源切换文案；用临时副本走完「改货币 → 保存到 Venture 存档 →
+  回读校验 → 恢复最近备份」全链路。
+- 布局：默认 1400×940 下「快捷编辑」页三行说明文字不必滚动即可看全；窗口缩小时
+  该页支持滚轮滚动（内容宽度跟随画布），底部「操作」栏与日志区改为从底部占位，
+  不再被挤掉。
+- **测试范围说明**：本轮只验证了 **Venture 模拟器存档**的查找、读取与写回；
+  原「连接头显 / adb 导出与回传」这条链路本轮**未做真机测试**。相关函数
+  （`export_save` / `import_save`）未改动，仅 GUI 载入时多记一个「来源」标记
+  用于切换「②」按钮文案与保存目标。
 
 详见 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [DISCLAIMER.md](DISCLAIMER.md)。
 
