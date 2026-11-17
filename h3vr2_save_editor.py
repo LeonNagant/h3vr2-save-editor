@@ -7,6 +7,7 @@ H3VR2 存档修改器（GUI）
 from __future__ import annotations
 
 import copy
+import glob
 import json
 import os
 import queue
@@ -159,7 +160,7 @@ class App:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("H3VR2 存档编辑器 v0.2.0  ·  Slot 1 / Profile0")
-        self.root.geometry("1400x900")
+        self.root.geometry("1400x940")
         self.root.minsize(1120, 720)
 
         if not os.path.isfile(core.CONFIG_PATH):
@@ -177,6 +178,9 @@ class App:
         self.devices: list[dict] = []
         self.dev_label_map: dict[str, str] = {}
         self.backup_dir: str | None = None
+        # 存档来源：none / venture（模拟器本地目录）/ manual（手动选择）/ export（adb 导出快照）
+        self.source_kind = "none"
+        self.source_meta: dict = {}
         # 预设 / 收藏独立于存档，导出新存档后仍在本机
         self.ud_path = core.user_data_path(self.cfg)
         self.ud = core.load_user_data(self.ud_path)
@@ -190,6 +194,7 @@ class App:
         # 启动时只列配置里的默认包名（官方包名）。设备上其他安装版本的包名，
         # 只有用户主动点「自动探测」后才会被枚举并进入下拉框供选择。
         self._load_latest_export()
+        self._autoload_venture()
         self._startup_connect()
         # 即使尚未载入存档，也先把预设下拉与收藏列表填好
         self._preset_refresh()
@@ -266,6 +271,43 @@ class App:
         for v in (self.pkg_var, self.prof_var, self.ip_var, self.port_var):
             v.trace_add("write", lambda *_: self._update_path_label())
 
+        # 存档来源：Venture 模拟器（PC 端，存档就是本机普通目录）或手动选择
+        ttk.Label(cfgf, text="来源：").grid(row=2, column=0, sticky="w", pady=(6, 0))
+        ttk.Button(cfgf, text="查找 Venture 存档", command=self._venture_scan).grid(
+            row=2, column=1, sticky="w", pady=(6, 0))
+        ttk.Button(cfgf, text="手动选择存档目录…", command=self._choose_dir).grid(
+            row=2, column=2, columnspan=2, sticky="w", pady=(6, 0))
+        ttk.Button(cfgf, text="重新载入", command=self._reload_source).grid(
+            row=2, column=4, sticky="w", pady=(6, 0))
+        self.source_var = tk.StringVar(value="尚未载入存档")
+        ttk.Label(cfgf, textvariable=self.source_var, foreground="#8a4b00",
+                  wraplength=760, justify="left").grid(
+            row=2, column=5, columnspan=5, sticky="w", padx=(10, 0), pady=(6, 0))
+
+        logf = ttk.LabelFrame(self.root, text=" 日志 ", padding=4)
+        logf.pack(side="bottom", fill="x", padx=8, pady=(0, 8))
+        self.log_text = scrolledtext.ScrolledText(logf, height=5, font=FONT_MONO,
+                                                  wrap="word", state="disabled")
+        self.log_text.pack(fill="both", expand=True)
+
+        bottom = ttk.LabelFrame(self.root, text=" 操作 ", padding=6)
+        bottom.pack(side="bottom", fill="x", padx=8, pady=4)
+        ttk.Button(bottom, text="① 一键导出存档", command=self._export).grid(row=0, column=0, padx=3)
+        self.btn_save = ttk.Button(bottom, text="② 保存到本地", command=self._save_local)
+        self.btn_save.grid(row=0, column=1, padx=3)
+        ttk.Button(bottom, text="③ 一键回传到头显", command=self._push).grid(row=0, column=2, padx=3)
+        ttk.Button(bottom, text="恢复最近备份", command=self._restore_backup).grid(row=0, column=3, padx=3)
+        self.only_modified = tk.BooleanVar(value=bool(self.cfg.get("push_only_modified", True)))
+        ttk.Checkbutton(bottom, text="只回传修改过的文件", variable=self.only_modified).grid(
+            row=0, column=4, padx=8)
+        self.stop_game = tk.BooleanVar(value=bool(self.cfg.get("stop_game_before_push", True)))
+        ttk.Checkbutton(bottom, text="回传前停止游戏并冷启动（必需）",
+                        variable=self.stop_game).grid(row=0, column=5, padx=8)
+        self.status_var = tk.StringVar(value="就绪")
+        ttk.Label(bottom, textvariable=self.status_var, foreground="#006600").grid(
+            row=0, column=6, sticky="w", padx=8)
+
+
         body = ttk.PanedWindow(self.root, orient="horizontal")
         body.pack(fill="both", expand=True, padx=8, pady=4)
 
@@ -311,32 +353,33 @@ class App:
         self._build_raw()
         self._build_desc()
 
-        bottom = ttk.LabelFrame(self.root, text=" 操作 ", padding=6)
-        bottom.pack(fill="x", padx=8, pady=4)
-        ttk.Button(bottom, text="① 一键导出存档", command=self._export).grid(row=0, column=0, padx=3)
-        ttk.Button(bottom, text="② 保存到本地", command=self._save_local).grid(row=0, column=1, padx=3)
-        ttk.Button(bottom, text="③ 一键回传到头显", command=self._push).grid(row=0, column=2, padx=3)
-        ttk.Button(bottom, text="恢复最近备份", command=self._restore_backup).grid(row=0, column=3, padx=3)
-        self.only_modified = tk.BooleanVar(value=bool(self.cfg.get("push_only_modified", True)))
-        ttk.Checkbutton(bottom, text="只回传修改过的文件", variable=self.only_modified).grid(
-            row=0, column=4, padx=8)
-        self.stop_game = tk.BooleanVar(value=bool(self.cfg.get("stop_game_before_push", True)))
-        ttk.Checkbutton(bottom, text="回传前停止游戏并冷启动（必需）",
-                        variable=self.stop_game).grid(row=0, column=5, padx=8)
-        self.status_var = tk.StringVar(value="就绪")
-        ttk.Label(bottom, textvariable=self.status_var, foreground="#006600").grid(
-            row=0, column=6, sticky="w", padx=8)
-
-        logf = ttk.LabelFrame(self.root, text=" 日志 ", padding=4)
-        logf.pack(fill="both", padx=8, pady=(0, 8))
-        self.log_text = scrolledtext.ScrolledText(logf, height=8, font=FONT_MONO,
-                                                  wrap="word", state="disabled")
-        self.log_text.pack(fill="both", expand=True)
         self.log("H3VR2 存档修改器已启动。Python " + sys.version.split()[0] +
                  " / tkinter " + str(tk.TkVersion))
         self.log("提示：先「① 一键导出存档」，修改后「② 保存到本地」，再「③ 一键回传到头显」。")
+        self.log("Venture 模拟器：点「查找 Venture 存档」直接找本机存档（无需 adb），"
+                 "改完点「② 保存到 Venture 存档」即写回，保存前自动备份。")
+        self.log("手动存档：点「手动选择存档目录…」，选 footlong.base / Profile0 / SaveData 均可。")
         self.log("v0.2.0 新增：商店/仓库编辑内容可「保存当前为预设」；在「★ 收藏与预设」页设好自动应用后，")
         self.log("　　　　　　每次导出新存档会自动还原编辑内容，无需重新编辑；物品选择框可勾「只看 ★ 收藏」。")
+
+    def _quick_wheel(self, e):
+        """快捷编辑页滚轮滚动。窗口变矮时靠它看到底部的说明文字。"""
+        c = getattr(self, "quick_canvas", None)
+        if c is None or self.nb.select() != str(self.tab_quick):
+            return
+        node = self.root.winfo_containing(e.x_root, e.y_root)
+        inside = False
+        while node is not None:
+            if str(node) == str(self.tab_quick) or str(node).startswith(str(self.tab_quick) + "."):
+                inside = True
+                break
+            try:
+                node = node.master
+            except Exception:
+                break
+        if not inside:
+            return
+        c.yview_scroll(-3 if getattr(e, "delta", 0) > 0 else 3, "units")
 
     # ------------------------------------------------------------ 快捷编辑页
     def _build_quick(self):
@@ -345,40 +388,50 @@ class App:
         canvas = tk.Canvas(outer, highlightthickness=0)
         vs = ttk.Scrollbar(outer, orient="vertical", command=canvas.yview)
         inner = ttk.Frame(canvas)
-        inner.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-        canvas.create_window((0, 0), window=inner, anchor="nw")
+        win = canvas.create_window((0, 0), window=inner, anchor="nw")
         canvas.configure(yscrollcommand=vs.set)
         canvas.pack(side="left", fill="both", expand=True)
         vs.pack(side="right", fill="y")
 
+        def _sync(_=None):
+            # 内容高度变了就更新滚动区；同时让内容宽度跟随画布，避免右侧被裁
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            canvas.itemconfigure(win, width=max(1, canvas.winfo_width()))
+
+        inner.bind("<Configure>", _sync)
+        canvas.bind("<Configure>", _sync)
+        self.quick_canvas = canvas
+        # 滚轮滚动：窗口变矮时也能看到底部说明文字（原先只能拖小滚动条）
+        self.root.bind_all("<MouseWheel>", self._quick_wheel)
+
         ttk.Label(inner, text="存档独有数值（改完点「应用快捷修改」）", font=FONT_B).grid(
-            row=0, column=0, columnspan=3, sticky="w", pady=(4, 8))
+            row=0, column=0, columnspan=3, sticky="w", pady=(2, 4))
         for i, (f, path, name, desc, typ) in enumerate(core.QUICK_FIELDS, start=1):
             ttk.Label(inner, text=name, font=FONT_MONO, width=20, anchor="w").grid(
-                row=i, column=0, sticky="w", padx=(4, 8), pady=2)
-            ttk.Label(inner, text=desc, width=42, anchor="w").grid(row=i, column=1, sticky="w", pady=2)
+                row=i, column=0, sticky="w", padx=(4, 8), pady=1)
+            ttk.Label(inner, text=desc, width=42, anchor="w").grid(row=i, column=1, sticky="w", pady=1)
             e = ttk.Entry(inner, width=18, font=FONT)
-            e.grid(row=i, column=2, sticky="w", padx=6, pady=2)
+            e.grid(row=i, column=2, sticky="w", padx=6, pady=1)
             self.quick_entries.append((f, path, typ, e))
 
         r = len(core.QUICK_FIELDS) + 2
         ttk.Button(inner, text="应用快捷修改", command=self._apply_quick).grid(
-            row=r, column=0, sticky="w", padx=4, pady=(10, 4))
+            row=r, column=0, sticky="w", padx=4, pady=(6, 2))
 
         sep = ttk.Separator(inner, orient="horizontal")
-        sep.grid(row=r + 1, column=0, columnspan=3, sticky="ew", pady=10)
-        ttk.Label(inner, text="批量工具", font=FONT_B).grid(row=r + 2, column=0, sticky="w", pady=4)
-        ttk.Label(inner, text="弹匣补满至（发）：").grid(row=r + 3, column=0, sticky="w", padx=4, pady=4)
+        sep.grid(row=r + 1, column=0, columnspan=3, sticky="ew", pady=6)
+        ttk.Label(inner, text="批量工具", font=FONT_B).grid(row=r + 2, column=0, sticky="w", pady=2)
+        ttk.Label(inner, text="弹匣补满至（发）：").grid(row=r + 3, column=0, sticky="w", padx=4, pady=2)
         self.mag_cap = tk.StringVar(value="7")
         ttk.Entry(inner, textvariable=self.mag_cap, width=10).grid(row=r + 3, column=1, sticky="w")
         ttk.Button(inner, text="补满所有弹匣", command=self._apply_mags).grid(
             row=r + 3, column=2, sticky="w", padx=6)
         ttk.Label(inner, text="难度倍率、音量、血腥效果、渲染档位等属于游戏内设置菜单项目，已从此栏移除；",
-                  foreground="#777777").grid(row=r + 4, column=0, columnspan=3, sticky="w", pady=(12, 0))
+                  foreground="#777777").grid(row=r + 4, column=0, columnspan=3, sticky="w", pady=(8, 0))
         ttk.Label(inner, text="如需脚本化修改，请在「全部参数（树）」或「原始 JSON」页编辑 Settings.json.gz。",
                   foreground="#777777").grid(row=r + 5, column=0, columnspan=3, sticky="w")
         ttk.Label(inner, text="商店出售物品与价格请到「商店编辑」页；以上修改需再点「② 保存到本地」或「③ 一键回传」。",
-                  foreground="#777777").grid(row=r + 6, column=0, columnspan=3, sticky="w", pady=(6, 4))
+                  foreground="#777777").grid(row=r + 6, column=0, columnspan=3, sticky="w", pady=(4, 2))
 
     # ------------------------------------------------------------ 参数树页
     def _build_tree(self):
@@ -633,7 +686,7 @@ class App:
             return core.export_save(self.cfg, s, log=log)
         def done(r):
             self.log(f"存档来源：{r['remote']}")
-            self._load_local(r["local_dir"])
+            self._load_local(r["local_dir"], "export")
             self._auto_apply_presets()
             self.backup_dir = None
         self._run_bg("一键导出存档", fn, done)
@@ -641,16 +694,114 @@ class App:
     def _load_latest_export(self):
         d = core.latest_export_dir()
         if d:
-            self._load_local(d)
+            self._load_local(d, "export")
             self.log("已自动载入最近一次导出：" + d)
 
-    def _load_local(self, path: str):
+    # ------------------------------------------------------------ Venture / 手动目录
+    def _autoload_venture(self):
+        """启动时先找 Venture 存档：它是模拟器里正在用的存档，优先于旧导出快照。"""
+        if not self.cfg.get("venture_auto_detect", True):
+            return
+        try:
+            found = core.find_venture_saves(self.cfg, log=lambda m: None)
+        except Exception:
+            return
+        if not found:
+            return
+        r = found[0]
+        self._load_local(r["path"], "venture", r)
+        self.log("已自动载入 Venture 模拟器存档：用户 %s／槽位 %s（%d 个文件，最后写入 %s）。"
+                 % (r["user"][:10], r["profile"], r["count"], r["mtime"]))
+        self.log("　　保存请用「② 保存到 Venture 存档」：直接写回该目录，保存前自动备份。")
+
+    def _venture_scan(self):
+        self._sync_cfg_from_ui()
+        def fn(log):
+            return core.find_venture_saves(self.cfg, log=log)
+        def done(found):
+            if not found:
+                messagebox.showinfo(
+                    "未找到 Venture 存档",
+                    "没有在 Venture 目录里找到 H3VR2 存档。\n\n"
+                    "· 确认 Venture 里装过游戏并至少运行过一次（存档在首次进枢纽后生成）；\n"
+                    "· 或在 config.json 的 venture_root 填写 Venture 数据目录；\n"
+                    "· 或点「手动选择存档目录…」直接选 footlong.base / SaveData 目录。\n\n"
+                    "已搜索：\n" + "\n".join(core.venture_roots(self.cfg)
+                                              or ["（未找到 Venture 安装目录）"]))
+                return
+            r = found[0] if len(found) == 1 else self._pick_venture_save(found)
+            if r:
+                self._open_venture(r)
+        self._run_bg("查找 Venture 存档", fn, done)
+
+    def _pick_dialog(self, title: str, hint: str, lines: list[str]) -> int | None:
+        """通用单选对话框，返回下标（取消返回 None）。"""
+        top = tk.Toplevel(self.root)
+        top.title(title)
+        top.transient(self.root)
+        top.grab_set()
+        ttk.Label(top, text=hint, padding=(10, 8, 10, 4)).pack(anchor="w")
+        lb = tk.Listbox(top, width=118, height=min(12, max(3, len(lines))),
+                        font=FONT_MONO, activestyle="dotbox", exportselection=False)
+        for line in lines:
+            lb.insert("end", line)
+        lb.selection_set(0)
+        lb.pack(fill="both", expand=True, padx=10)
+        out = {"i": None}
+
+        def ok(_=None):
+            sel = lb.curselection()
+            out["i"] = sel[0] if sel else None
+            top.destroy()
+
+        bar = ttk.Frame(top)
+        bar.pack(fill="x", padx=10, pady=8)
+        ttk.Button(bar, text="载入", command=ok).pack(side="left")
+        ttk.Button(bar, text="取消", command=top.destroy).pack(side="left", padx=6)
+        lb.bind("<Double-Button-1>", ok)
+        top.wait_window()
+        return out["i"]
+
+    def _pick_venture_save(self, found: list[dict]) -> dict | None:
+        lines = ["{}{}/{}{} · {} 个文件 · {}  ·  {}".format(
+            "" if r["official"] else "[非官方包名] ", r["user"][:10] or "-", r["profile"],
+            "" if r["official"] else f"（{r['package']}）", r["count"], r["mtime"], r["path"])
+            for r in found]
+        i = self._pick_dialog("选择 Venture 存档",
+                              "找到多份存档（不同账号 / 槽位），选一份载入：", lines)
+        return found[i] if i is not None else None
+
+    def _pick_paths(self, found: list[str]) -> str | None:
+        lines = []
+        for d in found:
+            files = sorted(glob.glob(os.path.join(d, "*.json.gz")))
+            mt = max((os.path.getmtime(f) for f in files), default=0)
+            when = datetime.fromtimestamp(mt).strftime("%Y-%m-%d %H:%M") if mt else "-"
+            lines.append(f"{len(files)} 个文件 · {when}  ·  {d}")
+        i = self._pick_dialog("选择存档目录", "该目录下找到多个存档，选一个载入：", lines)
+        return found[i] if i is not None else None
+
+    def _open_venture(self, r: dict):
+        if not r.get("official") and not messagebox.askyesno(
+                "非官方包名",
+                f"该存档来自非官方包名：{r['package']}\n\n"
+                "本程序默认只认官方包名 com.rustltd.h3vr2；其他包名可能属于改过的安装版本，"
+                "存档结构未必一致。仍要载入并允许写回吗？"):
+            return
+        self._load_local(r["path"], "venture", r)
+        self._auto_apply_presets()
+        self.log("Venture 存档：用户 %s／槽位 %s／包名 %s（最后写入 %s）"
+                 % (r["user"], r["profile"], r["package"], r["mtime"]))
+
+    def _load_local(self, path: str, kind: str = "manual", meta: dict | None = None):
         try:
             self.data = core.load_save(path)
         except Exception as e:
             messagebox.showerror("载入失败", str(e))
             return
         self.local_dir = path
+        self.source_kind = kind if self.data else "none"
+        self.source_meta = dict(meta or {})
         self.dirty.clear()
         self.file_list.delete(0, "end")
         for n in sorted(self.data):
@@ -666,14 +817,71 @@ class App:
         self._refresh_tree()
         self._refresh_raw()
         self._refresh_desc()
+        self._update_source_label()
         self.set_status(f"已载入 {len(self.data)} 个存档文件")
         self.log(f"载入本地存档：{path}（{len(self.data)} 个文件）")
 
+    def _update_source_label(self):
+        d = self.local_dir or ""
+        if self.source_kind == "venture" and d:
+            m = self.source_meta or {}
+            who = "用户 %s／槽位 %s／%s" % (m.get("user", "手动"), m.get("profile", "?"),
+                                          m.get("package", self.cfg["package"]))
+            self.source_var.set("Venture 模拟器存档（%s）——「② 保存到 Venture 存档」"
+                                "直接写回，保存前自动备份\n%s" % (who, d))
+            self.btn_save.configure(text="② 保存到 Venture 存档")
+        elif self.source_kind == "export" and d:
+            self.source_var.set("头显导出快照 ——「② 保存到本地」只改本地副本，"
+                                "需再点「③ 一键回传到头显」才会生效\n" + d)
+            self.btn_save.configure(text="② 保存到本地")
+        elif self.source_kind == "manual" and d:
+            self.source_var.set("手动选择的本地目录 ——「② 保存到本地目录」直接写回；"
+                                "要回到头显再用「③ 一键回传到头显」\n" + d)
+            self.btn_save.configure(text="② 保存到本地目录")
+        else:
+            self.source_var.set("尚未载入存档 —— 可点「查找 Venture 存档」「手动选择存档目录」"
+                                "或「① 一键导出存档」")
+            self.btn_save.configure(text="② 保存到本地")
+
+    def _reload_source(self):
+        if self.local_dir and os.path.isdir(self.local_dir):
+            self._load_local(self.local_dir, self.source_kind, self.source_meta)
+        else:
+            messagebox.showinfo("提示", "尚未载入存档目录")
+
     def _choose_dir(self):
-        d = filedialog.askdirectory(title="选择包含 *.json.gz 的 footlong.base 目录")
-        if d:
-            self._load_local(d)
-            self._auto_apply_presets()
+        d = filedialog.askdirectory(
+            title="选择存档目录（footlong.base / Profile0 / SaveData / Venture 用户目录均可）")
+        if not d:
+            return
+        found = core.find_save_dirs(d, self.cfg["save_subdir"], depth=2)
+        if not found:
+            # 玩家可能停在任意一层（external-data / 包名 / 账号目录 / Venture 根目录），
+            # 放宽到 8 层；find_save_dirs 自带目录数上限，误选大目录也不会卡死。
+            found = core.find_save_dirs(d, self.cfg["save_subdir"], depth=8)
+        if not found:
+            messagebox.showwarning("没有存档",
+                                   "该目录下没有找到 *.json.gz 存档文件：\n" + d +
+                                   "\n\n请选到 footlong.base 或它的上一层（Profile0 / SaveData）。")
+            return
+        path = found[0] if len(found) == 1 else self._pick_paths(found)
+        if not path:
+            return
+        kind = "venture" if self._is_venture_dir(path) else "manual"
+        meta = {"user": "手动", "profile": os.path.basename(os.path.dirname(path)),
+                "package": self.pkg_var.get().strip() or self.cfg["package"]}
+        self._load_local(path, kind, meta)
+        self._auto_apply_presets()
+        if kind == "venture":
+            self.log("该目录位于 Venture 数据目录内，按 Venture 存档处理：保存会直接写回。")
+
+    def _is_venture_dir(self, path: str) -> bool:
+        low = os.path.normcase(os.path.abspath(path))
+        for root in core.venture_roots(self.cfg):
+            if low.startswith(os.path.normcase(os.path.abspath(root)) + os.sep):
+                return True
+        return "external-data" in low
+
 
     def _open_dir(self):
         if self.local_dir and os.path.isdir(self.local_dir):
@@ -1847,10 +2055,46 @@ class App:
             if not messagebox.askyesno("原始 JSON 未应用", "原始 JSON 页有未应用的修改，是否先应用？"):
                 return
             self._apply_raw()
+        if self.source_kind == "venture":
+            self._save_to_venture()
+            return
         n = core.write_save(self.local_dir, self.data)
         self.log(f"已写回本地存档：{len(n)} 个文件（{self.local_dir}）")
         self.set_status("本地已保存；可一键回传")
         self.dirty.clear()
+
+    def _save_to_venture(self):
+        """Venture 存档就是本机目录：确认 → 备份 → 写盘 → 回读校验，没有 adb 环节。"""
+        running = core.venture_related_processes()
+        warn = ""
+        if running:
+            warn = ("\n\n⚠ 检测到相关进程正在运行：" + "、".join(running) +
+                    "\n请先在 Venture 里退出游戏：游戏存档时会把内存旧值写回文件，"
+                    "覆盖本次修改。")
+        if not messagebox.askyesno(
+                "写回 Venture 存档",
+                "将把修改后的存档直接写回模拟器存档目录：\n" + (self.local_dir or "") +
+                "\n\n· 保存前自动备份原文件到 backups\\venture_<时间戳>\\\n"
+                "· 写盘后逐个回读校验\n继续？" + warn):
+            return
+        backup = bool(self.cfg.get("venture_backup_on_save", True))
+        if self._raw_dirty():
+            if messagebox.askyesno("原始 JSON 未应用", "原始 JSON 页有未应用的修改，是否先应用？"):
+                self._apply_raw()
+
+        def fn(log):
+            return core.save_venture(self.cfg, self.local_dir, self.data,
+                                     backup=backup, log=log)
+
+        def done(r):
+            self.dirty.clear()
+            self.backup_dir = r.get("backup_dir")
+            self.log("写回 %d 个文件，回读校验通过" % len(r["written"]))
+            if r.get("running"):
+                self.log("⚠ 写入时仍有相关进程在运行（%s）：退出游戏后重新进入确认数值；"
+                         "若被覆盖，用「恢复最近备份」回滚。" % "、".join(r["running"]))
+            self.set_status("已写回 Venture 存档，进游戏确认数值")
+        self._run_bg("写回 Venture 存档", fn, done)
 
     def _push(self):
         if not self.local_dir or not self.data:
@@ -1895,6 +2139,9 @@ class App:
         self._run_bg("一键回传到头显", fn, done)
 
     def _restore_backup(self):
+        if self.source_kind == "venture" and self.local_dir and os.path.isdir(self.local_dir):
+            self._restore_venture()
+            return
         root = core.abs_local(self.cfg["backup_root"])
         if not os.path.isdir(root):
             messagebox.showinfo("提示", "暂无备份目录：" + root)
@@ -1916,6 +2163,34 @@ class App:
         def fn(log):
             return core.import_save(self.cfg, s, d, log=log)
         self._run_bg("恢复最近备份", fn)
+
+    def _restore_venture(self):
+        """Venture 模式下的回滚：把 backups/ 里最近一份快照复制回存档目录。"""
+        root = core.abs_local(self.cfg["backup_root"])
+        slot = os.path.basename((self.local_dir or "").rstrip("\\/")) or self.cfg["save_subdir"]
+        cands = []
+        if os.path.isdir(root):
+            for name in sorted(os.listdir(root)):
+                d = os.path.join(root, name, slot)
+                if os.path.isdir(d) and glob.glob(os.path.join(d, "*.json.gz")):
+                    cands.append(d)
+        if not cands:
+            messagebox.showinfo("提示", "暂无可用备份：\n" + root)
+            return
+        d = cands[-1]
+        if not messagebox.askyesno(
+                "确认恢复",
+                "将用备份覆盖模拟器存档目录：\n" + self.local_dir +
+                "\n\n备份来源：\n" + d + "\n\n继续？"):
+            return
+        try:
+            core.copy_save(d, self.local_dir)
+        except Exception as e:
+            messagebox.showerror("恢复失败", str(e))
+            return
+        self._load_local(self.local_dir, "venture", self.source_meta)
+        self.log("已用备份覆盖 Venture 存档：" + d)
+        self.set_status("已恢复备份")
 
 
 def main():

@@ -56,6 +56,9 @@ DEFAULT_CONFIG = {
     "relaunch_after_push": True,          # 回传后冷启动游戏，使其重新读档
     "items_catalog": "items_catalog.json",# 物品目录（AssetKey / 中文名 / 真实引用）
     "presets_file": "presets.json",       # 预设 / 收藏（可手工编辑，独立于存档）
+    "venture_root": "",                   # Venture 数据根目录；空 = 自动查找 %LOCALAPPDATA%\Venture
+    "venture_auto_detect": True,          # 启动时自动查找并载入 Venture 存档
+    "venture_backup_on_save": True,       # 写回 Venture 存档前自动备份原文件
 }
 
 
@@ -1058,6 +1061,268 @@ def latest_export_dir() -> str | None:
         if os.path.isdir(os.path.join(d, "footlong.base")):
             return os.path.join(d, "footlong.base")
     return None
+
+
+# ---------------------------------------------------------------- Venture 模拟器
+#
+# Venture（https://github.com/Villagers654/Venture）是 PC 端 Quest 模拟器：游戏
+# 以普通 PC 进程运行，存档落成**本机普通目录**，而不是头显上的 /sdcard：
+#
+#   <Venture>/data/users/<用户 ID>/<包名>/external-data/files/SaveData/<槽位>/footlong.base
+#
+# 所以在 Venture 上改存档不需要 adb：直接读写这些 *.json.gz 即可。代价是设备侧
+# 那套保障（am force-stop / chmod 666 / 冷启动）不适用，改为「保存前自动备份 +
+# 提示先退出游戏」，并且写入后逐文件回读校验。
+
+VENTURE_APP_DIR = "Venture"
+VENTURE_SAVEDATA_REL = ("external-data", "files", "SaveData")
+# 粗筛「模拟器或游戏可能正在运行」的进程名关键词；只用于提示，不强制结束。
+VENTURE_PROC_HINTS = ("venture", "h3vr2", "rustltd", "footlong")
+
+
+def venture_roots(cfg: dict | None = None) -> list[str]:
+    """候选 Venture 数据根目录：配置项优先，其次各平台默认安装位置。
+
+    Windows 便携版的默认位置是 %LOCALAPPDATA%\\Venture；Linux 版按 XDG 与
+    Flatpak 各自的习惯位置查找。只返回真实存在的目录。
+    """
+    cands: list[str] = []
+    p = str((cfg or {}).get("venture_root") or "").strip().strip('"')
+    if p:
+        cands.append(p if os.path.isabs(p) else os.path.join(BASE_DIR, p))
+    env = os.environ
+    home = os.path.expanduser("~")
+    local = env.get("LOCALAPPDATA") or os.path.join(home, "AppData", "Local")
+    if os.name == "nt":
+        cands += [os.path.join(local, VENTURE_APP_DIR),
+                  os.path.join(env.get("APPDATA") or "", VENTURE_APP_DIR),
+                  os.path.join(env.get("ProgramData") or "", VENTURE_APP_DIR)]
+    else:
+        xdg = env.get("XDG_DATA_HOME") or os.path.join(home, ".local", "share")
+        cands += [os.path.join(xdg, VENTURE_APP_DIR),
+                  os.path.join(home, ".var", "app", "org.venture.Venture",
+                               "data", VENTURE_APP_DIR)]
+    out, seen = [], set()
+    for c in cands:
+        if not c or not os.path.isdir(c):
+            continue
+        c = os.path.abspath(c)
+        key = os.path.normcase(c)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(c)
+    return out
+
+
+def _has_gz(d: str) -> bool:
+    try:
+        return any(n.lower().endswith(".json.gz") for n in os.listdir(d))
+    except OSError:
+        return False
+
+
+def find_save_dirs(path: str, save_subdir: str = "footlong.base",
+                   depth: int = 2, max_nodes: int = 20000) -> list[str]:
+    """在给定目录及其下若干层里找出真正的存档目录（含 *.json.gz 的目录）。
+
+    手动选路径时玩家可能停在任意一层：`footlong.base`、`Profile0`、`SaveData`、
+    账号目录、包名目录，甚至 Venture 根目录；这里逐层往下兼容。
+    大目录兜底：最多访问 `max_nodes` 个目录就停，避免误选磁盘根目录时卡死。
+    """
+    if not path:
+        return []
+    p = os.path.abspath(os.path.expanduser(str(path).strip().strip('"')))
+    out: list[str] = []
+    seen = set()          # 防止符号链接 / 循环目录
+    budget = [max_nodes]
+
+    def walk(d: str, left: int):
+        if budget[0] <= 0:
+            return
+        key = os.path.normcase(d)
+        if key in seen:
+            return
+        seen.add(key)
+        budget[0] -= 1
+        if _has_gz(d):
+            out.append(d)
+            return
+        sub = os.path.join(d, save_subdir)
+        if os.path.isdir(sub) and _has_gz(sub):
+            out.append(sub)
+            return
+        if left <= 1:
+            return
+        try:
+            names = sorted(os.listdir(d))
+        except OSError:
+            return
+        for n in names:
+            c = os.path.join(d, n)
+            if os.path.isdir(c) and not n.startswith("."):
+                walk(c, left - 1)
+
+    if os.path.isdir(p):
+        walk(p, max(1, depth + 1))   # depth = 允许再下探的层数
+    return out
+
+
+def resolve_save_dir(path: str, save_subdir: str = "footlong.base",
+                     depth: int = 8) -> str | None:
+    """单个路径 → 唯一的存档目录（多于一个时取遍历顺序最靠前的那个）。
+
+    默认探 8 层，够覆盖玩家可能停住的任意一层：
+    `<Venture>/data/users/<账号>/<包名>/external-data/files/SaveData/Profile0/footlong.base`。
+    """
+    found = find_save_dirs(path, save_subdir, depth=depth)
+    return found[0] if found else None
+
+
+def _venture_user_dirs(root: str) -> list[str]:
+    """从任意一层 Venture 目录出发，找出含 `<包名>/external-data` 的用户目录。"""
+    if not os.path.isdir(root):
+        return []
+    out: list[str] = []
+    for base in (root,
+                 os.path.join(root, "data", "users"),
+                 os.path.join(root, "users")):
+        if not os.path.isdir(base):
+            continue
+        try:
+            names = sorted(os.listdir(base))
+        except OSError:
+            continue
+        for name in names:
+            user_dir = os.path.join(base, name)
+            if not os.path.isdir(user_dir):
+                continue
+            try:
+                pkg_names = os.listdir(user_dir)
+            except OSError:
+                continue
+            if any(os.path.isdir(os.path.join(user_dir, n, "external-data"))
+                   for n in pkg_names):
+                out.append(user_dir)
+        if out:
+            break
+    return out
+
+
+def find_venture_saves(cfg: dict | None = None, roots: list[str] | None = None,
+                       log=print) -> list[dict]:
+    """扫描本机的 Venture 存档，按「官方包名优先 + 最近写入优先」排序。
+
+    返回项：{path, root, user, package, profile, files, count, mtime, mtime_ts,
+    official}。与设备侧一致，官方包名（`package` 配置项）视为正常来源，
+    其他包名照样列出但排在后面，由玩家自己确认后再载入。
+    `roots` 指定时只扫这些目录（测试或自定义数据目录时用）。
+    """
+    cfg = cfg or dict(DEFAULT_CONFIG)
+    official = (cfg.get("package") or "com.rustltd.h3vr2").strip()
+    sub = cfg.get("save_subdir") or "footlong.base"
+    found: list[dict] = []
+    seen: set[str] = set()
+    roots = list(roots) if roots is not None else venture_roots(cfg)
+    if log:
+        log("搜索 Venture 存档：" + ("；".join(roots) if roots else "未找到 Venture 安装目录"))
+    for root in roots:
+        for user_dir in _venture_user_dirs(root):
+            user_id = os.path.basename(user_dir)
+            try:
+                pkgs = [n for n in sorted(os.listdir(user_dir))
+                        if os.path.isdir(os.path.join(user_dir, n, *VENTURE_SAVEDATA_REL))]
+            except OSError:
+                continue
+            for pkg in pkgs:
+                savedata = os.path.join(user_dir, pkg, *VENTURE_SAVEDATA_REL)
+                for d in find_save_dirs(savedata, sub, depth=2):
+                    key = os.path.normcase(d)
+                    if key in seen:
+                        continue
+                    files = sorted(glob.glob(os.path.join(d, "*.json.gz")))
+                    if not files:
+                        continue
+                    seen.add(key)
+                    mtime = max(os.path.getmtime(f) for f in files)
+                    rel = os.path.relpath(d, savedata).replace("\\", "/")
+                    found.append({
+                        "path": d, "root": root, "user": user_id, "package": pkg,
+                        "profile": rel.split("/")[0] if "/" in rel else sub,
+                        "files": files, "count": len(files),
+                        "mtime": datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M"),
+                        "mtime_ts": mtime, "official": pkg == official,
+                    })
+    found.sort(key=lambda r: (not r["official"], -r["mtime_ts"]))
+    if log:
+        if found:
+            log(f"找到 {len(found)} 份 Venture 存档：" + "；".join(
+                f"{r['user'][:8]}/{r['profile']}（{r['count']} 个文件，{r['mtime']}）"
+                for r in found[:4]))
+        else:
+            log("未在 Venture 目录中找到存档（可用「手动选择存档目录」）")
+    return found
+
+
+def venture_related_processes(hints: tuple = VENTURE_PROC_HINTS) -> list[str]:
+    """列出可能是「Venture 或游戏正在运行」的进程名（只做提示，不强制结束）。"""
+    if os.name != "nt":
+        return []
+    kw = dict(stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20)
+    kw["creationflags"] = 0x08000000   # CREATE_NO_WINDOW
+    try:
+        cp = subprocess.run(["tasklist", "/FO", "CSV", "/NH"], **kw)
+        out = cp.stdout.decode("utf-8", "replace")
+    except Exception:
+        return []
+    hits = set()
+    for line in out.splitlines():
+        name = line.split('","')[0].strip('" ').strip()
+        if name and any(k in name.lower() for k in hints):
+            hits.add(name)
+    return sorted(hits)
+
+
+def save_venture(cfg: dict, local_dir: str, data: dict,
+                 only: set[str] | list[str] | None = None,
+                 backup: bool = True, log=print) -> dict:
+    """把内存中的存档写回 Venture 的本地存档目录。
+
+    与头显回传不同：没有 am force-stop / chmod 666，改为保存前把原文件复制到
+    `backups/venture_<时间戳>/<槽位>/`，写盘后逐个回读解压校验。游戏运行中会在
+    自己存档时把内存旧值写回，所以调用方应先确认游戏已退出（见
+    `venture_related_processes`）。
+    """
+    if not local_dir or not os.path.isdir(local_dir):
+        raise RuntimeError("存档目录不存在：" + str(local_dir or ""))
+    tag = "venture_" + now_tag()
+    backup_dir = None
+    if backup:
+        backup_dir = os.path.join(abs_local(cfg.get("backup_root") or "backups"),
+                                  tag, os.path.basename(local_dir.rstrip("\\/")))
+        os.makedirs(backup_dir, exist_ok=True)
+        for p in sorted(glob.glob(os.path.join(local_dir, "*.json.gz"))):
+            shutil.copy2(p, os.path.join(backup_dir, os.path.basename(p)))
+        log(f"已备份原存档：{backup_dir}")
+    try:
+        written = write_save(local_dir, data, only=only)
+    except OSError as e:
+        raise RuntimeError("写入失败（存档可能被运行中的游戏占用，请先退出游戏）："
+                           + str(e))
+    bad = []
+    for name in written:
+        p = os.path.join(local_dir, name)
+        try:
+            with open(p, "rb") as f:
+                json.loads(gzip.decompress(f.read()).decode("utf-8"))
+        except Exception:
+            bad.append(name)
+    if bad:
+        raise RuntimeError("写盘后校验失败：" + ", ".join(bad)
+                           + (f"\n可用备份恢复：{backup_dir}" if backup_dir else ""))
+    log(f"已写回 Venture 存档：{len(written)} 个文件 → {local_dir}")
+    return {"written": written, "backup_dir": backup_dir, "path": local_dir,
+            "running": venture_related_processes()}
 
 
 # ---------------------------------------------------------------- 预设 / 收藏

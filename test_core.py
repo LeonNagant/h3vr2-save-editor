@@ -400,11 +400,95 @@ def unit_tests():
     finally:
         core.run_adb = real_run_adb
 
+    venture_tests(tmp)
     export_path_tests(tmp)
     shutil.rmtree(tmp, ignore_errors=True)
     if fixture_root:
         shutil.rmtree(fixture_root, ignore_errors=True)
 
+
+def venture_tests(tmp: str):
+    """Venture 模拟器：存档目录自动发现、手动路径解析、写回与备份。
+
+    用一棵仿真的 `data/users/<账号>/<包名>/external-data/files/SaveData/...`
+    目录树覆盖，不依赖本机是否装了 Venture。
+    """
+    print("\n-- Venture 模拟器存档 --")
+    root = os.path.join(tmp, "venture_home")
+    users = os.path.join(root, "data", "users")
+    OFFICIAL = core.DEFAULT_CONFIG["package"]
+    other_pkg = "com.example.custom.h3vr2"
+
+    def make_save(user, pkg, profile, mtime=None):
+        d = os.path.join(users, user, pkg, "external-data", "files", "SaveData",
+                         profile, "footlong.base")
+        make_synthetic_save(d)
+        if mtime:
+            for n in os.listdir(d):
+                os.utime(os.path.join(d, n), (mtime, mtime))
+        return d
+
+    old = make_save("aaaa1111bbbb", OFFICIAL, "Profile0", 1600000000)
+    new = make_save("cccc2222dddd", OFFICIAL, "Profile1", 1700000000)
+    odd = make_save("eeee3333ffff", other_pkg, "Profile0", 1800000000)
+    os.makedirs(os.path.join(users, "gggg4444", "com.other.game", "external-data"),
+                exist_ok=True)   # 没有 SaveData 的杂物目录，不该被当成存档
+
+    cfg = dict(core.DEFAULT_CONFIG)
+    cfg["venture_root"] = root
+    cfg["backup_root"] = os.path.join(tmp, "vbak")
+    check("Venture 根目录取自配置", core.venture_roots(cfg)[0] == os.path.abspath(root),
+          core.venture_roots(cfg)[0])
+
+    # 只扫这棵仿真目录树，避免把本机真实安装的 Venture 也算进来
+    found = core.find_venture_saves(cfg, roots=[root], log=lambda m: None)
+    paths = [r["path"] for r in found]
+    check("扫描到全部 Venture 存档", len(found) == 3, "%d 份" % len(found))
+    check("官方包名最近写入排第一",
+          bool(found) and found[0]["path"] == new,
+          found[0]["path"] if found else "无")
+    check("非官方包名排在最后并标记",
+          bool(found) and found[-1]["path"] == odd and not found[-1]["official"])
+    check("账号 / 槽位 / 文件数解析正确",
+          found[0]["user"] == "cccc2222dddd" and found[0]["profile"] == "Profile1"
+          and found[0]["count"] == 18 and bool(found[0]["mtime"]),
+          "%s/%s %d 个文件 %s" % (found[0]["user"], found[0]["profile"],
+                                  found[0]["count"], found[0]["mtime"]))
+    check("无存档的目录不入结果", not any("com.other.game" in p for p in paths))
+
+    probes = [(new, "footlong.base"), (os.path.dirname(new), "槽位目录"),
+              (os.path.dirname(os.path.dirname(new)), "SaveData"),
+              (os.path.join(users, "cccc2222dddd"), "账号目录")]
+    for probe, label in probes:
+        got = core.resolve_save_dir(probe, "footlong.base")
+        check("手动选路径可定位（%s）" % label, got == new, got or "None")
+    check("无存档目录返回空",
+          core.resolve_save_dir(os.path.join(tmp, "nowhere"), "footlong.base") is None)
+
+    # 写回：自动备份 → 写盘 → 回读校验
+    data = core.load_save(new)
+    data["Economy.json.gz"]["Data"]["Money"] = 777
+    r = core.save_venture(cfg, new, data, log=lambda m: None)
+    check("写回到 Venture 存档", len(r["written"]) == 18, "%d 个文件" % len(r["written"]))
+    check("写回后数值生效",
+          core.quick_read(core.load_save(new), "Economy.json.gz", "Data.Money") == 777)
+    check("保存前自动备份原文件",
+          bool(r["backup_dir"]) and os.path.isfile(
+              os.path.join(r["backup_dir"] or "", "Economy.json.gz")),
+          r["backup_dir"] or "")
+    baks = core.load_save(r["backup_dir"]) if r["backup_dir"] else {}
+    check("备份是改动前的原档",
+          core.quick_read(baks, "Economy.json.gz", "Data.Money") == 100)
+    check("不影响其他账号的存档",
+          core.quick_read(core.load_save(old), "Economy.json.gz", "Data.Money") == 100)
+
+    msg = ""
+    try:
+        core.save_venture(cfg, os.path.join(tmp, "missing"), data, backup=False,
+                          log=lambda m: None)
+    except RuntimeError as e:
+        msg = str(e)
+    check("目录不存在时报错可读", "不存在" in msg, msg[:60])
 
 def export_path_tests(tmp: str):
     """回归：adb 1.0.41(v37) 处理非 ASCII 本地路径会截断路径。
