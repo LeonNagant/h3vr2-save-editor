@@ -1,7 +1,37 @@
 # 更新日志
 
-本项目遵循 `vMAJOR.MINOR.PATCH` 版本号。当前稳定版：**v0.3.0**。
+本项目遵循 `vMAJOR.MINOR.PATCH` 版本号。当前稳定版：**v0.4.0**。
 每个版本的 Windows 便携版见 [Releases](https://github.com/LeonNagant/h3vr2-save-editor/releases)。
+
+---
+
+## v0.4.0 — 2026-11-26
+
+### 新增
+
+- **物品表更新至 684 条**（原 666 条）：从更新后的游戏资源里解析出 **18 件新物品**
+  并追加进 `items_catalog.json`，含 SCAR 系列（SCAR-H / SCAR-L / CQC / 弹匣 /
+  照门共 9 件）与 MiniPrism / AimPro Mikro 瞄具、镜座共 9 件。现在商店编辑与
+  仓库编辑可以选择并写入这些新物品。
+  - 新旧资源用「是否含 SCAR」区分：旧资源 628 条定义无 SCAR，新资源 645 条含 9 件 SCAR。
+  - 每件新物品的真实引用由根包 `extref://` 扫描确认；注意 `Reflex_MicroT2`
+    使用 `/Item/` 命名空间，其余为根级引用，不统一套前缀。
+- **独立工具「物品表生成器」** `tools/item_catalog_builder.py`：游戏再次更新时，
+  用户可用自己的安装包（zip）/ `footlong.base.hdog` / 已解出的 `_root_bundle`
+  自行读取物品定义，扫描真实引用，并与现有 `items_catalog.json` 增量合并
+  （不改已验证条目）；提供命令行与 tkinter 图形界面。仅该工具需要 UnityPy，
+  主程序仍零 pip 依赖。详见 `tools/README.md`。
+
+### 测试
+
+- 单元测试 **103/103 通过**（原 98 项 + 5 项新物品回归）：SCAR 9 件全部入表、
+  新增瞄具 / 镜座入表、根级与 `/Item/` 引用反查、物品总数与验证数一致。
+- 独立工具用同一份新版根包回放，生成的 18 件新增物品与正式表引用 0 差异。
+
+### 边界
+
+- 新物品的 `verified` 表示引用在资源中被扫描到，尚未在真机存档里写入验证；
+  写入前请备份存档。头显 adb 链路本版本未改动。
 
 ---
 

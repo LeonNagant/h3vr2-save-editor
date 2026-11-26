@@ -177,6 +177,28 @@ def unit_tests():
                         "extref://footlong.base/M1911A1",
                         "extref://footlong.base/Item/UtilityRig",
                         "extref://footlong.base/USAS12"]))
+
+    # v0.4.0：20261119E 新增物品（SCAR 系列 + 瞄具 / 镜座）
+    scar_keys = ["SCARH", "SCARL", "SCARH_CQC", "SCARL_CQC",
+                 "SCARH_Magazine10rd", "SCARH_Magazine20rd",
+                 "SCARH_Magazine10rd_FDE", "SCARH_Magazine20rd_FDE",
+                 "IronSight_SCAR"]
+    cat_keys = {i["key"] for i in cat}
+    check("SCAR 系列 9 件全部在物品表", all(k in cat_keys for k in scar_keys),
+          "%d/9" % sum(1 for k in scar_keys if k in cat_keys))
+    check("新增瞄具 / 镜座在物品表",
+          all(k in cat_keys for k in ["Scope_1xMicroprism", "Scope_3xMicroprism",
+                                      "Reflex_MicroT2", "MountAMicro_Standard",
+                                      "MountACOGMini_Microprism"]))
+    check("SCAR 根级引用可反查", core.item_by_ref("extref://footlong.base/SCARH")
+          and core.item_by_ref("extref://footlong.base/SCARH")["key"] == "SCARH")
+    check("新物品 /Item/ 命名空间引用可反查",
+          core.item_by_ref("extref://footlong.base/Item/Reflex_MicroT2")
+          and core.item_by_ref("extref://footlong.base/Item/Reflex_MicroT2")["key"]
+          == "Reflex_MicroT2")
+    check("物品表总数与验证数一致",
+          len(cat) == 684 and sum(1 for i in cat if i.get("verified")) == 669,
+          "%d / %d" % (len(cat), sum(1 for i in cat if i.get("verified"))))
     d4 = core.load_save(src)
     stores = core.store_keys(d4)
     check("商店列表", len(stores) >= 1, ", ".join(stores))

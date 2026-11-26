@@ -1,6 +1,6 @@
 # H3VR2 存档编辑器
 
-[![version](https://img.shields.io/badge/version-v0.3.0-blue)](#3-版本信息与下载) · [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE) · [![python](https://img.shields.io/badge/python-3.10%2B-blue)](#4-快速开始) · [项目页](https://leonnagant.github.io/h3vr2-save-editor/) · [下载 v0.3.0](https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.3.0)
+[![version](https://img.shields.io/badge/version-v0.4.0-blue)](#3-版本信息与下载) · [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE) · [![python](https://img.shields.io/badge/python-3.10%2B-blue)](#4-快速开始) · [项目页](https://leonnagant.github.io/h3vr2-save-editor/) · [下载 v0.4.0](https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.4.0)
 
 面向 Meta Quest 上 **H3VR2 单机存档** 的非官方第三方编辑工具：可编辑存档内全部
 参数、商店出售物品与价格、玩家仓库物品；一键从 USB / 无线 adb 导出存档，
@@ -50,7 +50,7 @@ gzip 压缩的 JSON 保存在头显上。本项目把这些文件解析成可读
 |---|---|
 | 编辑任意参数 | 「全部参数（树）」逐字段双击改值、右键增删节点；「原始 JSON」整段编辑 |
 | 快捷编辑 | 只保留存档独有的 9 个数值（货币 / 三项资源 / 经验 / 血量 / 统计）+ 弹匣补满 |
-| 商店编辑 | 列出全部货位，搜索 666 种物品改出售物品、售价、分区；增删货位、打折、统一定价 |
+| 商店编辑 | 列出全部货位，搜索 684 种物品改出售物品、售价、分区；增删货位、打折、统一定价 |
 | 仓库编辑 | 多页 12×8 网格：换物品、改位置与占格、清空组件、复制 / 删除 / 新增槽位 |
 | 预设 | 商店页 / 仓库页保存当前为预设、一键替换、追加物品、删除；可导出分享 |
 | 自动还原 | 设为自动应用后，每次导出 / 载入新存档自动套用预设 |
@@ -59,6 +59,7 @@ gzip 压缩的 JSON 保存在头显上。本项目把这些文件解析成可读
 | 一键回传 | 强制停止游戏 → 备份 → 推送 → `chmod 666` → md5 校验 → 冷启动重新读档 |
 | Venture 存档 | 自动查找 PC 端 Venture 模拟器里的 H3VR2 存档并直接读写，无需 adb；保存前自动备份 |
 | 手动目录 | 自动查找失败或玩家自己从别处提取了存档时，手选 `footlong.base` / `Profile0` / `SaveData` 均可 |
+| 物品表生成器 | 附带的独立工具 `tools/item_catalog_builder.py`：游戏更新后从自己的安装包读取新物品，增量更新 `items_catalog.json` |
 | 回滚 | 「恢复最近备份」把 `backups/<时间戳>/` 的原档推回设备 |
 
 界面共 **7 个标签页**：快捷编辑、商店编辑、仓库编辑、★ 收藏与预设、
@@ -72,15 +73,17 @@ gzip 压缩的 JSON 保存在头显上。本项目把这些文件解析成可读
 
 | 项目 | 内容 |
 |---|---|
-| 当前版本 | **v0.3.0** |
-| 发布日期 | 2026-11-17 |
+| 当前版本 | **v0.4.0** |
+| 发布日期 | 2026-11-26 |
 | 适用平台 | Windows 10/11 64 位 + Meta Quest（已开启开发者模式 / USB 调试）；含 PC 端 Venture 模拟器 |
 | 运行环境 | 便携版自带 Python 3.10.5（含 tkinter）与 adb；零第三方 pip 依赖 |
-| 下载 | [GitHub Releases · v0.3.0](https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.3.0) → `H3VR2-Save-Editor-v0.3.0-Windows-Portable.zip` |
+| 下载 | [GitHub Releases · v0.4.0](https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.4.0) → `H3VR2-Save-Editor-v0.4.0-Windows-Portable.zip` |
 | 项目页 | [GitHub Pages](https://leonnagant.github.io/h3vr2-save-editor/) |
 | 更新日志 | [CHANGELOG.md](CHANGELOG.md) · [VERSION.txt](VERSION.txt) |
 
-v0.3.0 由社区贡献者 Niko666233 通过 PR #1 新增 Venture 模拟器存档支持（自动
+v0.4.0 更新物品表至 684 条（新增 SCAR 系列等 18 件），并附独立工具
+「物品表生成器」可用自己的游戏安装包生成 / 更新物品表；v0.3.0 由社区
+贡献者 Niko666233 通过 PR #1 新增 Venture 模拟器存档支持（自动
 查找 / 手动选目录 / 直接写回 + 备份）；v0.2.0 新增预设 / 自动还原 / 仓库编辑 /
 收藏，并修复了中文路径下导出失败的问题；详细条目见 [CHANGELOG.md](CHANGELOG.md)。
 
@@ -88,8 +91,8 @@ v0.3.0 由社区贡献者 Niko666233 通过 PR #1 新增 Venture 模拟器存档
 
 ### 方式 A：Windows 便携版（推荐，普通用户）
 
-1. 从 [Releases](https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.3.0)
-   下载 `H3VR2-Save-Editor-v0.3.0-Windows-Portable.zip`。
+1. 从 [Releases](https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.4.0)
+   下载 `H3VR2-Save-Editor-v0.4.0-Windows-Portable.zip`。
    Release 资产使用 ASCII 文件名以兼容各平台；解压后的目录与包内说明均为中文。
 2. **把整个压缩包解压到一个文件夹**（不要只解压单个文件；支持含中文的路径）。
 3. 双击 `启动存档编辑器.bat`；若窗口没出现，改双击 `启动-调试模式.bat` 看报错。
@@ -317,7 +320,7 @@ py -3.10 test_core.py --device    # 单元 + 真机只读往返（回传原样�
 
 **Venture 模拟器支持（v0.3.0 新增，社区贡献）**
 
-- 单元测试 **98/98 通过**：新增 17 项 Venture 回归——目录自动发现（官方包名
+- 单元测试 **103/103 通过**（v0.4.0，含 5 项新物品回归）：新增 17 项 Venture 回归——目录自动发现（官方包名
   优先、最近写入优先、无关目录不入结果）、手动选路径在 `footlong.base` /
   槽位 / `SaveData` / 账号目录四层都能定位、写回生效、保存前备份是改动前原档、
   不影响其他账号的存档、目录不存在时报错可读。全部用仿真目录树覆盖，
@@ -347,11 +350,14 @@ py -3.10 test_core.py --device    # 单元 + 真机只读往返（回传原样�
 ├── .gitignore                排除玩家存档、运行产物与本地配置
 ├── config.json               脱敏配置模板（默认官方包名）
 ├── presets.json              示例预设与收藏（不含任何用户数据）
-├── items_catalog.json        666 条物品（651 条引用已验证）
+├── items_catalog.json        684 条物品（669 条引用已验证）
 ├── save_core.py              核心：adb / 导出回传 / gzip / 字段 / 预设 / 仓库
 ├── h3vr2_save_editor.py      tkinter GUI 主程序
 ├── test_core.py              单元 + 真机测试
 ├── run_editor.bat            Windows 源码启动脚本
+├── tools/
+│   ├── item_catalog_builder.py   物品表生成器（从安装包读取新物品）
+│   └── README.md                 生成器用法说明
 └── docs/
     ├── index.html            GitHub Pages 项目页
     └── .nojekyll             跳过 Jekyll 构建
@@ -371,4 +377,4 @@ py -3.10 test_core.py --device    # 单元 + 真机只读往返（回传原样�
 
 ---
 
-*最后更新：2026-11-17 · v0.3.0*
+*最后更新：2026-11-26 · v0.4.0*

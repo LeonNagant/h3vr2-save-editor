@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="H3VR2 存档编辑器：面向 Meta Quest 单机存档的非官方第三方编辑工具。编辑全部参数、商店出售物品与价格、玩家仓库；一键导出与回传。Windows 便携版，零依赖。">
 <meta name="keywords" content="H3VR2, 存档编辑器, Quest, 单机存档, 商店编辑, 仓库编辑, 预设, 开源">
-<title>H3VR2 存档编辑器 · v0.3.0</title>
+<title>H3VR2 存档编辑器 · v0.4.0</title>
 <style>
   :root{
     --ink:#0f172a; --muted:#5b6b80; --line:#dfe6ef; --bg:#f5f8fc;
@@ -121,15 +121,15 @@
     <p class="sub">面向 Meta Quest 上 H3VR2 <strong>单机存档</strong>的非官方第三方编辑工具：
        改全部参数、商店出售物品与价格、玩家仓库物品；一键导出、一键回传，并让改动真正生效。</p>
     <div>
-      <span class="tag">v0.3.0</span>
+      <span class="tag">v0.4.0</span>
       <span class="tag">Windows 便携版</span>
       <span class="tag">零第三方依赖</span>
       <span class="tag">MIT License</span>
       <span class="tag">AI 生成辅助</span>
     </div>
-    <p class="meta">发布日期 2026-11-17 · 自带 Python 3.10.5 与 adb · 不需要安装任何环境</p>
+    <p class="meta">发布日期 2026-11-26 · 自带 Python 3.10.5 与 adb · 不需要安装任何环境</p>
     <div class="btns">
-      <a class="btn btn-primary" href="https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.3.0">下载 v0.3.0 便携版</a>
+      <a class="btn btn-primary" href="https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.4.0">下载 v0.4.0 便携版</a>
       <a class="btn btn-ghost" href="https://github.com/LeonNagant/h3vr2-save-editor#readme">阅读完整文档</a>
     </div>
   </div>
@@ -160,12 +160,13 @@
        全部变成可读、可编辑的字段；并把「改完不生效」的链路一并处理好。</p>
     <div class="grid g3">
       <div class="card"><h3>全部参数</h3><p>树形页逐字段双击改值、右键增删节点；「原始 JSON」页可整段编辑，1296 个叶子字段都能改。</p></div>
-      <div class="card"><h3>商店编辑</h3><p>列出全部货位，搜索 666 种物品改出售物品、售价与分区；增删货位、打折、统一定价。</p></div>
+      <div class="card"><h3>商店编辑</h3><p>列出全部货位，搜索 684 种物品改出售物品、售价与分区；增删货位、打折、统一定价。</p></div>
       <div class="card"><h3>仓库编辑</h3><p>多页 12×8 网格：换物品、改占格、清空组件、复制 / 删除 / 新增槽位，页满自动开新页。</p></div>
       <div class="card"><h3>预设与自动还原</h3><p>编辑内容存在独立的 <code>presets.json</code>，导出新存档后一键还原，不必重新编辑。</p></div>
       <div class="card"><h3>收藏</h3><p>常用物品加星，物品选择框「只看收藏」快速定位，可批量加入商店或仓库。</p></div>
       <div class="card"><h3>一键导出 / 回传</h3><p>USB 或无线 adb 导出到本机；回传自动停游戏 → 备份 → 推送 → 校验 → 冷启动读档。</p></div>
       <div class="card"><h3>Venture 模拟器</h3><p>v0.3.0 新增：自动查找 PC 端 Venture 里的存档并直接写回（无需 adb），保存前自动备份。</p></div>
+      <div class="card"><h3>物品表生成器</h3><p>v0.4.0 附带独立工具：游戏更新后从自己的安装包读取新物品，增量更新物品表，让修改器认识新枪新物件。</p></div>
     </div>
   </div>
 </section>
@@ -266,15 +267,16 @@
     <h2>版本信息与下载</h2>
     <table>
       <tr><th style="width:180px">项目</th><th>内容</th></tr>
-      <tr><td>当前版本</td><td><span class="pill">v0.3.0</span></td></tr>
-      <tr><td>发布日期</td><td>2026-11-17</td></tr>
+      <tr><td>当前版本</td><td><span class="pill">v0.4.0</span></td></tr>
+      <tr><td>发布日期</td><td>2026-11-26</td></tr>
       <tr><td>适用平台</td><td>Windows 10/11 64 位 + Meta Quest（已开启开发者模式 / USB 调试）；含 PC 端 Venture 模拟器</td></tr>
       <tr><td>运行环境</td><td>便携版自带 Python 3.10.5（含 tkinter）与 adb，零第三方 pip 依赖</td></tr>
-      <tr><td>下载</td><td><a href="https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.3.0">Releases · v0.3.0</a> → <code>H3VR2-Save-Editor-v0.3.0-Windows-Portable.zip</code>（资产用 ASCII 名，解压后目录与说明均为中文）</td></tr>
+      <tr><td>下载</td><td><a href="https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.4.0">Releases · v0.4.0</a> → <code>H3VR2-Save-Editor-v0.4.0-Windows-Portable.zip</code>（资产用 ASCII 名，解压后目录与说明均为中文）</td></tr>
       <tr><td>源码 / 更新日志</td><td><a href="https://github.com/LeonNagant/h3vr2-save-editor">GitHub 仓库</a> · <a href="https://github.com/LeonNagant/h3vr2-save-editor/blob/main/CHANGELOG.md">CHANGELOG.md</a></td></tr>
       <tr><td>许可</td><td>MIT（仅覆盖本仓库原创代码与文档；内附 Python / adb 遵循各自许可证）</td></tr>
     </table>
-    <p class="lead" style="margin-top:18px">v0.3.0 新增 Venture 模拟器存档支持（自动查找 / 手动选目录 / 直接写回 + 备份）；
+    <p class="lead" style="margin-top:18px">v0.4.0 更新物品表至 684 条（新增 SCAR 系列等 18 件），并附独立「物品表生成器」可用自己的安装包增量更新；
+       v0.3.0 新增 Venture 模拟器存档支持（自动查找 / 手动选目录 / 直接写回 + 备份）；
        v0.2.0 新增预设与自动还原、玩家仓库编辑、收藏；修复中文路径下导出失败（让 adb 不接触本地路径）与默认包名收敛。
        v0.1.0 为首个公开版本，含存档解析、GUI、商店编辑与一键导出 / 回传。</p>
   </div>
@@ -286,7 +288,7 @@
     <div class="grid g2">
       <div class="card"><h3>已验证</h3>
         <ul class="clean">
-          <li>单元测试 98/98 通过（含 17 项 Venture 回归、中文路径导出 7 项、默认包名约束 6 项及反例）。</li>
+          <li>单元测试 103/103 通过（含 5 项新物品、17 项 Venture 回归、中文路径导出 7 项、默认包名约束 6 项及反例）。</li>
           <li>GUI 真实启动；Venture 存档查找 / 写回 / 备份回滚经仿真目录树回归，真实存档未被写入。</li>
           <li>商店价格与出售物品、仓库新增物件经真机「停游戏 → 回传 → 冷启动 → 重新导出」验证被接受。</li>
           <li>发布包 <code>testzip</code> 通过；脱敏扫描 0 命中，不含玩家存档数据。</li>
@@ -307,7 +309,7 @@
 <div class="footer">
   <div class="wrap cols">
     <div>
-      <div><strong>H3VR2 存档编辑器</strong> · v0.3.0 · 非官方第三方工具</div>
+      <div><strong>H3VR2 存档编辑器</strong> · v0.4.0 · 非官方第三方工具</div>
       <div style="margin-top:6px">本项目使用 <strong>AI 生成辅助</strong>，经人工审阅与真机验证后发布。</div>
       <div style="margin-top:6px">游戏名称与商标归各自权利人所有；本项目与其无关联、未获授权。</div>
     </div>

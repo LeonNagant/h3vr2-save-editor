@@ -159,7 +159,7 @@ def pick_item(parent, app, title="选择物品", current_ref="") -> str | None:
 class App:
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("H3VR2 存档编辑器 v0.3.0  ·  Slot 1 / Profile0")
+        self.root.title("H3VR2 存档编辑器 v0.4.0  ·  Slot 1 / Profile0")
         self.root.geometry("1400x940")
         self.root.minsize(1120, 720)
 

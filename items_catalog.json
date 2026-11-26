@@ -1,12 +1,13 @@
 {
- "generated": "v0.1.0 发布版",
+ "generated": "v0.4.0（合并 20261119E 新版资源新增 18 件物品）",
  "source": {
-  "items": "游戏资源内 ItemSpawnerDef 定义",
-  "translations": "物品中文名对照表",
-  "refs": "游戏资源字符串 + 存档内真实物品引用"
+  "items": "游戏资源内 ItemSpawnerDef 定义（含 20261119E 新版 SCAR 等 18 件）",
+  "translations": "物品中文名对照表（新物品中文名取新版资源内已汉化名）",
+  "refs": "游戏资源字符串 + 存档内真实物品引用",
+  "note": "新物品真实引用由 item_catalog_builder.py 从根包 extref 扫描确认；Reflex_MicroT2 使用 /Item/ 命名空间，其余为根级引用。"
  },
- "count": 666,
- "verified_count": 651,
+ "count": 684,
+ "verified_count": 669,
  "items": [
   {
    "key": "CoachGun12g",
@@ -9033,6 +9034,259 @@
    "category": "存档中出现",
    "folders": [],
    "ref": "extref://footlong.base/wo_sandboxsurvey_0",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "Scope_3xMicroprism",
+   "en": "3x MiniPrism Scope",
+   "zh": "3倍 MiniPrism 棱镜瞄具",
+   "type": 8,
+   "hidden": 0,
+   "category": "Attachments",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/Attachments/Sight/Scope"
+   ],
+   "ref": "extref://footlong.base/Scope_3xMicroprism",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "SCARH_CQC",
+   "en": "SCAR-H CQC",
+   "zh": "SCAR-H CQC",
+   "type": 1,
+   "hidden": 0,
+   "category": "Firearms",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/Firearms/Rifle/SelectFireRifle"
+   ],
+   "ref": "extref://footlong.base/SCARH_CQC",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "SCARH",
+   "en": "SCAR-H",
+   "zh": "SCAR-H",
+   "type": 1,
+   "hidden": 0,
+   "category": "Firearms",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/Firearms/Rifle/SelectFireRifle"
+   ],
+   "ref": "extref://footlong.base/SCARH",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "MountAMicro_Standard",
+   "en": "AimPro Mikro Standard Mount",
+   "zh": "AimPro Mikro 标准镜座",
+   "type": 8,
+   "hidden": 0,
+   "category": "Attachments",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/Attachments/Mount"
+   ],
+   "ref": "extref://footlong.base/MountAMicro_Standard",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "SCARH_Magazine20rd",
+   "en": "SCAR-H 20rd Magazine",
+   "zh": "SCAR-H 20发弹匣",
+   "type": 2,
+   "hidden": 0,
+   "category": "RoundContainers",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/RoundContainers/Magazine"
+   ],
+   "ref": "extref://footlong.base/SCARH_Magazine20rd",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "Reflex_MicroT2",
+   "en": "AimPro Mikro T-2 Reflex Sight",
+   "zh": "AimPro Mikro T-2 反射式瞄具",
+   "type": 8,
+   "hidden": 0,
+   "category": "Attachments",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/Attachments/Sight/ReflexSight"
+   ],
+   "ref": "extref://footlong.base/Item/Reflex_MicroT2",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "MountAMicro_Spacer30mm",
+   "en": "AimPro Mikro 30mm Spacer",
+   "zh": "AimPro Mikro 30mm 增高座",
+   "type": 8,
+   "hidden": 0,
+   "category": "Attachments",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/Attachments/Mount"
+   ],
+   "ref": "extref://footlong.base/MountAMicro_Spacer30mm",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "MountACOGMini_MicroprismSpacerCantilever",
+   "en": "MiniPrism Cantilever Riser",
+   "zh": "MiniPrism 悬臂增高座",
+   "type": 8,
+   "hidden": 0,
+   "category": "Attachments",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/Attachments/Mount"
+   ],
+   "ref": "extref://footlong.base/MountACOGMini_MicroprismSpacerCantilever",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "SCARH_Magazine10rd",
+   "en": "SCAR-H 10rd Magazine",
+   "zh": "SCAR-H 10发弹匣",
+   "type": 2,
+   "hidden": 0,
+   "category": "RoundContainers",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/RoundContainers/Magazine"
+   ],
+   "ref": "extref://footlong.base/SCARH_Magazine10rd",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "SCARL",
+   "en": "SCAR-L",
+   "zh": "SCAR-L",
+   "type": 1,
+   "hidden": 0,
+   "category": "Firearms",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/Firearms/Rifle/SelectFireRifle"
+   ],
+   "ref": "extref://footlong.base/SCARL",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "SCARH_Magazine20rd_FDE",
+   "en": "SCAR-H 20rd Magazine (FDE)",
+   "zh": "SCAR-H 20发弹匣（沙色）",
+   "type": 2,
+   "hidden": 0,
+   "category": "RoundContainers",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/RoundContainers/Magazine"
+   ],
+   "ref": "extref://footlong.base/SCARH_Magazine20rd_FDE",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "MountACOGMini_MicroprismSpacer",
+   "en": "MiniPrism Riser Mount",
+   "zh": "MiniPrism 增高座",
+   "type": 8,
+   "hidden": 0,
+   "category": "Attachments",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/Attachments/Mount"
+   ],
+   "ref": "extref://footlong.base/MountACOGMini_MicroprismSpacer",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "IronSight_SCAR",
+   "en": "SCAR Iron Sight",
+   "zh": "SCAR 照门",
+   "type": 8,
+   "hidden": 0,
+   "category": "Attachments",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/Attachments/Sight/IronSight"
+   ],
+   "ref": "extref://footlong.base/IronSight_SCAR",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "MountACOGMini_Microprism",
+   "en": "MiniPrism Rail Mount",
+   "zh": "MiniPrism 导轨镜座",
+   "type": 8,
+   "hidden": 0,
+   "category": "Attachments",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/Attachments/Mount"
+   ],
+   "ref": "extref://footlong.base/MountACOGMini_Microprism",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "SCARH_Magazine10rd_FDE",
+   "en": "SCAR-H 10rd Magazine (FDE)",
+   "zh": "SCAR-H 10发弹匣（沙色）",
+   "type": 2,
+   "hidden": 0,
+   "category": "RoundContainers",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/RoundContainers/Magazine"
+   ],
+   "ref": "extref://footlong.base/SCARH_Magazine10rd_FDE",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "Scope_1xMicroprism",
+   "en": "1x MiniPrism Scope",
+   "zh": "1倍 MiniPrism 棱镜瞄具",
+   "type": 8,
+   "hidden": 0,
+   "category": "Attachments",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/Attachments/Sight/ReflexSight",
+    "extref://footlong.base/ItemSpawnerFolder/Attachments/Sight/Scope"
+   ],
+   "ref": "extref://footlong.base/Scope_1xMicroprism",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "MountAMicro_Spacer39mm",
+   "en": "AimPro Mikro 39mm Spacer",
+   "zh": "AimPro Mikro 39mm 增高座",
+   "type": 8,
+   "hidden": 0,
+   "category": "Attachments",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/Attachments/Mount"
+   ],
+   "ref": "extref://footlong.base/MountAMicro_Spacer39mm",
+   "ref_alt": null,
+   "verified": true
+  },
+  {
+   "key": "SCARL_CQC",
+   "en": "SCAR-L CQC",
+   "zh": "SCAR-L CQC",
+   "type": 1,
+   "hidden": 0,
+   "category": "Firearms",
+   "folders": [
+    "extref://footlong.base/ItemSpawnerFolder/Firearms/Rifle/SelectFireRifle"
+   ],
+   "ref": "extref://footlong.base/SCARL_CQC",
    "ref_alt": null,
    "verified": true
   }

@@ -1,26 +1,29 @@
 H3VR2 存档编辑器
 ================
 
-当前版本：v0.3.0
-发布日期：2026-11-17
+当前版本：v0.4.0
+发布日期：2026-11-26
 仓库：https://github.com/LeonNagant/h3vr2-save-editor
 项目页：https://leonnagant.github.io/h3vr2-save-editor/
-下载：https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.3.0
+下载：https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.4.0
 
-v0.3.0 功能（社区贡献者 Niko666233 通过 PR #1 提供）
-- Venture 模拟器（PC 端）存档支持：自动查找本机 Venture 存档并直接读写，
-  无需 adb；也能「手动选择存档目录」定位 footlong.base / Profile0 / SaveData
-- 「存档来源」栏随来源切换「②」按钮文案；写回前自动备份、写盘后逐文件校验
-- 官方包名优先、最近写入优先排序；非官方包名需二次确认才载入（沿用包名政策）
-- 快捷编辑页支持滚轮滚动、内容宽度随窗口，矮窗口下不再遮挡底部说明
-- 新增配置项 venture_root / venture_auto_detect / venture_backup_on_save
+v0.4.0 功能
+- 物品表更新至 684 条（原 666 条）：新增 18 件物品，含 SCAR-H / SCAR-L / CQC /
+  弹匣 / 照门共 9 件 SCAR 系列，以及 MiniPrism / AimPro Mikro 瞄具与镜座 9 件；
+  商店编辑与仓库编辑现可选择并写入这些新物品
+- 新物品真实引用由游戏资源根包 extref 扫描确认（Reflex_MicroT2 用 /Item/ 命名空间）
+- 附独立工具 tools/item_catalog_builder.py：游戏再更新时，用户用自己的安装包
+  （zip）/ footlong.base.hdog / _root_bundle 即可读取新物品并增量更新物品表；
+  命令行与图形界面两种用法，仅该工具需 UnityPy，主程序仍零 pip 依赖
 
 历史版本
+- v0.3.0：Venture 模拟器（PC 端）存档支持，自动查找 / 手动选目录 / 直接写回 + 备份
+  （社区贡献者 Niko666233 通过 PR #1 提供）
 - v0.2.0：预设 / 自动还原 / 玩家仓库编辑 / 收藏；修复中文路径下导出失败；
   默认包名收敛为官方包名 com.rustltd.h3vr2，仅「自动探测」后枚举设备真实包名
 - v0.1.0：全参数编辑、商店物品与价格编辑、一键 USB / 局域网导出与回传
 
-验证：合并后单元测试 98/98 通过（含 17 项 Venture 回归）；发布包脱敏扫描
-0 命中，不含玩家存档数据。头显 adb 链路本版本未改动、未做真机复测。
+验证：单元测试 103/103 通过（含 5 项新物品回归）；独立工具回放生成结果与正式表
+引用 0 差异；发布包脱敏扫描 0 命中，不含玩家存档数据。头显 adb 链路本版本未改动。
 
 本项目使用 AI 生成辅助，详见 README.md 与 DISCLAIMER.md。
