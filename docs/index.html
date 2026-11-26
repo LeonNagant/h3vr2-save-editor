@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="H3VR2 存档编辑器：面向 Meta Quest 单机存档的非官方第三方编辑工具。编辑全部参数、商店出售物品与价格、玩家仓库；一键导出与回传。Windows 便携版，零依赖。">
+<meta name="description" content="H3VR2 存档编辑器：面向 Meta Quest 单机存档的非官方第三方编辑工具。跟着四步图示改数值、商店物品与仓库，一键导出回传并真正生效。Windows 便携版，零依赖。">
 <meta name="keywords" content="H3VR2, 存档编辑器, Quest, 单机存档, 商店编辑, 仓库编辑, 预设, 开源">
 <title>H3VR2 存档编辑器 · v0.4.0</title>
 <style>
@@ -11,7 +11,7 @@
     --ink:#0f172a; --muted:#5b6b80; --line:#dfe6ef; --bg:#f5f8fc;
     --card:#ffffff; --accent:#0d9488; --accent-dark:#0b6f68;
     --amber:#b45309; --amber-bg:#fffbeb; --amber-line:#fcd34d;
-    --hero1:#0b1a2b; --hero2:#155e63; --code:#0d1b2a;
+    --hero1:#0b1a2b; --hero2:#155e63; --code:#0d1b2a; --red:#d92d20;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
@@ -32,9 +32,9 @@
   .nav-links a{color:var(--muted)}
   .nav-links a:hover{color:var(--accent-dark)}
   .hero{background:linear-gradient(135deg,var(--hero1) 0%,var(--hero2) 100%);
-        color:#eaf4f6;padding:66px 0 58px}
+        color:#eaf4f6;padding:60px 0 52px}
   .hero h1{margin:0 0 12px;font-size:38px;line-height:1.3;letter-spacing:.5px}
-  .hero .sub{margin:0 0 8px;font-size:17px;color:#bfe3e2;max-width:760px}
+  .hero .sub{margin:0 0 8px;font-size:17px;color:#bfe3e2;max-width:780px}
   .hero .meta{margin:14px 0 26px;font-size:14px;color:#9fc9c9}
   .tag{display:inline-block;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.24);
        border-radius:999px;padding:3px 12px;margin:0 8px 8px 0;font-size:13px;color:#e6fbf8}
@@ -57,27 +57,32 @@
         padding:20px 22px;box-shadow:0 2px 10px rgba(15,23,42,.04)}
   .card h3{margin:0 0 8px;font-size:17px}
   .card p{margin:0;color:var(--muted);font-size:14.5px}
-  .card .num{display:inline-flex;align-items:center;justify-content:center;
-             width:28px;height:28px;border-radius:8px;background:#e6f7f4;
-             color:var(--accent-dark);font-weight:700;font-size:14px;margin-bottom:10px}
   .notice{border-left:4px solid var(--accent);background:#f0fbf9;border-radius:0 10px 10px 0;
           padding:16px 20px;margin:0 0 16px}
   .notice.amber{border-left-color:var(--amber-line);background:var(--amber-bg)}
   .notice h3{margin:0 0 6px;font-size:16px}
   .notice p{margin:0;font-size:14.5px;color:#41556b}
   .notice.amber p{color:#7c5210}
+  .shot{background:var(--card);border:1px solid var(--line);border-radius:12px;
+        padding:16px;margin:0 0 20px;box-shadow:0 2px 10px rgba(15,23,42,.04)}
+  .shot-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .shot-num{display:inline-flex;align-items:center;justify-content:center;
+            width:34px;height:34px;border-radius:9px;background:var(--red);
+            color:#fff;font-weight:700;font-size:17px;flex:none}
+  .shot-head h3{margin:0;font-size:18px}
+  .shot-head p{margin:2px 0 0;color:var(--muted);font-size:14px}
+  .shot img{display:block;width:100%;height:auto;border:1px solid var(--line);
+            border-radius:8px;background:#fff}
+  .legend-tip{font-size:13px;color:var(--muted);margin:10px 0 0}
+  .legend-tip b{color:var(--red)}
   .steps{counter-reset:s;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
   .step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
   .step .n{display:inline-block;background:var(--hero1);color:#fff;border-radius:7px;
            padding:2px 10px;font-weight:700;font-size:14px;margin-bottom:10px}
   .step h3{margin:0 0 6px;font-size:16px}
   .step p{margin:0;color:var(--muted);font-size:14px}
-  pre{background:var(--code);color:#d7e7f2;border-radius:10px;padding:16px 18px;
-      overflow:auto;font-size:13px;line-height:1.6;
-      font-family:Consolas,"Cascadia Code","Source Han Mono",monospace}
   code{font-family:Consolas,"Cascadia Code",monospace;background:#eef3f8;
        color:#0b5963;border-radius:4px;padding:1px 5px;font-size:.92em}
-  pre code{background:none;color:inherit;padding:0}
   table{width:100%;border-collapse:collapse;background:var(--card);
         border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:14.5px}
   th,td{padding:11px 14px;border-bottom:1px solid var(--line);text-align:left}
@@ -105,11 +110,10 @@
   <div class="nav-in">
     <div class="brand">H3VR2 <span>存档编辑器</span></div>
     <nav class="nav-links">
+      <a href="#how">四步流程</a>
+      <a href="#download">下载</a>
       <a href="#features">功能</a>
-      <a href="#start">使用方法</a>
-      <a href="#presets">预设与收藏</a>
-      <a href="#package">包名策略</a>
-      <a href="#version">版本与下载</a>
+      <a href="#docs">进阶文档</a>
       <a href="https://github.com/LeonNagant/h3vr2-save-editor">GitHub 仓库</a>
     </nav>
   </div>
@@ -118,191 +122,126 @@
 <div class="hero">
   <div class="wrap">
     <h1>H3VR2 存档编辑器</h1>
-    <p class="sub">面向 Meta Quest 上 H3VR2 <strong>单机存档</strong>的非官方第三方编辑工具：
-       改全部参数、商店出售物品与价格、玩家仓库物品；一键导出、一键回传，并让改动真正生效。</p>
+    <p class="sub">改 H3VR2 单机存档里的<strong>数值、商店物品与价格、玩家仓库</strong>，并把修改真正写回设备使其生效。
+       Windows 便携版自带 Python 与 adb，<strong>无需安装任何依赖</strong>，解压即用。</p>
     <div>
       <span class="tag">v0.4.0</span>
       <span class="tag">Windows 便携版</span>
       <span class="tag">零第三方依赖</span>
-      <span class="tag">MIT License</span>
       <span class="tag">AI 生成辅助</span>
     </div>
-    <p class="meta">发布日期 2026-11-26 · 自带 Python 3.10.5 与 adb · 不需要安装任何环境</p>
+    <p class="meta">发布日期 2026-11-26 · 自带 Python 3.10.5 与 adb · 跟着下方图示操作即可</p>
     <div class="btns">
       <a class="btn btn-primary" href="https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.4.0">下载 v0.4.0 便携版</a>
-      <a class="btn btn-ghost" href="https://github.com/LeonNagant/h3vr2-save-editor#readme">阅读完整文档</a>
+      <a class="btn btn-ghost" href="#how">看四步图示 ↓</a>
     </div>
   </div>
 </div>
 
-<section id="about">
+<section id="how">
   <div class="wrap">
-    <div class="notice">
-      <h3>本项目使用 AI 生成辅助</h3>
-      <p>仓库中的源代码、物品目录、字段说明、技术文档、使用说明、发布说明以及本
-         GitHub Pages 页面，均由 AI 辅助生成，并经人工审阅、单元测试（81/81 通过）
-         与真机往返验证后发布。AI 生成内容可能存在错误或与实际版本不一致之处，
-         请以自己导出的存档为准，操作前自行备份。</p>
-    </div>
+    <h2>四步改存档（跟着图做）</h2>
+    <p class="lead">下面是 <strong>v0.4.0 真实界面</strong>的操作演示：<b style="color:var(--red)">红框</b>标出要点的按钮 / 输入框，
+       圆圈数字是操作顺序，图片底部图例说明每步做什么。图中数值为演示用，非真实玩家存档。</p>
+
     <div class="notice amber">
-      <h3>非官方 · 仅用于自己的单机存档</h3>
-      <p>本项目与游戏开发者、发行方、平台方无任何关联，也未获授权或认可。
-         只读写设备上的存档 JSON，不修改游戏 APK / OBB，不绕过授权或内购，
-         不收集或上传任何数据。请勿用于在线 / 联机功能。</p>
+      <h3>先记住这一条：游戏只在「启动时」读档</h3>
+      <p>运行中界面数值来自内存，跑图与结算会把旧值写回文件，直接推送会被覆盖。
+         所以请保持底部「回传前停止游戏并冷启动（必需）」勾选，否则修改看起来「没效果」。</p>
     </div>
+
+    <div class="shot">
+      <div class="shot-head"><span class="shot-num">1</span><div>
+        <h3>连接设备 / 本地读取存档</h3>
+        <p>USB 数据线连接并在头显点「允许 USB 调试」→ 点「刷新设备」→ 下拉框选 <code>[USB]</code> 设备；
+           不连头显时可用「查找 Venture 存档」或「手动选择存档目录」读本地存档。</p>
+      </div></div>
+      <img src="images/step1-connect.png" alt="步骤1：连接设备与读取本地存档，红框标出设备下拉框、刷新设备、查找 Venture 存档、手动选择存档目录">
+      <p class="legend-tip">图中 <b>①</b> 选设备 <b>②</b> 刷新设备 <b>③</b> 本地 / Venture 读取 <b>④</b> 手动选存档目录</p>
+    </div>
+
+    <div class="shot">
+      <div class="shot-head"><span class="shot-num">2</span><div>
+        <h3>一键导出存档</h3>
+        <p>点底部「① 一键导出存档」，程序把头显存档导出到 <code>exports/&lt;时间戳&gt;/footlong.base/</code>，
+           左侧文件列表会列出导出的文件。</p>
+      </div></div>
+      <img src="images/step2-export.png" alt="步骤2：点击一键导出存档按钮，导出文件出现在左侧列表">
+      <p class="legend-tip">图中 <b>①</b> 点这里导出存档到本机 <b>②</b> 导出的存档文件出现在这里</p>
+    </div>
+
+    <div class="shot">
+      <div class="shot-head"><span class="shot-num">3</span><div>
+        <h3>修改内容</h3>
+        <p>在「快捷编辑」页改货币 / 肉 / 金属 / 芥末等数值后点「应用快捷修改」；商店与仓库在对应标签页编辑，
+           改完点「② 保存到本地」写入本机副本。</p>
+      </div></div>
+      <img src="images/step3-edit.png" alt="步骤3：在快捷编辑页把货币肉金属芥末改为9999并点应用快捷修改">
+      <p class="legend-tip">图中 <b>①</b> 在输入框改货币 / 肉 / 金属 / 芥末 <b>②</b> 点这里应用修改</p>
+    </div>
+
+    <div class="shot">
+      <div class="shot-head"><span class="shot-num">4</span><div>
+        <h3>传回设备 / 保存到本地目录</h3>
+        <p>点「③ 一键回传到头显」：程序自动<strong>停游戏 → 备份 → 推送 → 校验 → 冷启动</strong>，改动即刻生效。
+           本地 / Venture 存档点「②」直接写回；改坏了点「恢复最近备份」回滚。</p>
+      </div></div>
+      <img src="images/step4-push.png" alt="步骤4：点击回传按钮使修改生效，另有保存本地与恢复备份按钮">
+      <p class="legend-tip">图中 <b>①</b> 保存到本地 / Venture <b>②</b> 回传头显并冷启动生效 <b>③</b> 出问题可回滚</p>
+    </div>
+  </div>
+</section>
+
+<section id="download">
+  <div class="wrap">
+    <h2>下载与运行</h2>
+    <table>
+      <tr><th style="width:180px">项目</th><th>内容</th></tr>
+      <tr><td>当前版本</td><td><span class="pill">v0.4.0</span>（2026-11-26）</td></tr>
+      <tr><td>下载</td><td><a href="https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.4.0">Releases · v0.4.0</a> → <code>H3VR2-Save-Editor-v0.4.0-Windows-Portable.zip</code>（ASCII 资产名，解压后目录与说明均为中文）</td></tr>
+      <tr><td>运行</td><td>解压整个压缩包（支持中文路径）→ 双击 <code>启动存档编辑器.bat</code>；窗口没出现就双击 <code>启动-调试模式.bat</code> 看报错</td></tr>
+      <tr><td>环境</td><td>Windows 10/11 64 位 + Meta Quest（开发者模式 / USB 调试）；也支持 PC 端 Venture 模拟器</td></tr>
+      <tr><td>依赖</td><td>无需安装：自带 Python 3.10.5（含 tkinter）与 adb，零第三方 pip 依赖</td></tr>
+    </table>
   </div>
 </section>
 
 <section id="features">
   <div class="wrap">
-    <h2>功能</h2>
-    <p class="lead">从一份 gzip 压缩的 JSON 存档里，把资源、经验、商店货位、仓库槽位
-       全部变成可读、可编辑的字段；并把「改完不生效」的链路一并处理好。</p>
+    <h2>能改什么</h2>
     <div class="grid g3">
-      <div class="card"><h3>全部参数</h3><p>树形页逐字段双击改值、右键增删节点；「原始 JSON」页可整段编辑，1296 个叶子字段都能改。</p></div>
-      <div class="card"><h3>商店编辑</h3><p>列出全部货位，搜索 684 种物品改出售物品、售价与分区；增删货位、打折、统一定价。</p></div>
-      <div class="card"><h3>仓库编辑</h3><p>多页 12×8 网格：换物品、改占格、清空组件、复制 / 删除 / 新增槽位，页满自动开新页。</p></div>
-      <div class="card"><h3>预设与自动还原</h3><p>编辑内容存在独立的 <code>presets.json</code>，导出新存档后一键还原，不必重新编辑。</p></div>
-      <div class="card"><h3>收藏</h3><p>常用物品加星，物品选择框「只看收藏」快速定位，可批量加入商店或仓库。</p></div>
-      <div class="card"><h3>一键导出 / 回传</h3><p>USB 或无线 adb 导出到本机；回传自动停游戏 → 备份 → 推送 → 校验 → 冷启动读档。</p></div>
-      <div class="card"><h3>Venture 模拟器</h3><p>v0.3.0 新增：自动查找 PC 端 Venture 里的存档并直接写回（无需 adb），保存前自动备份。</p></div>
-      <div class="card"><h3>物品表生成器</h3><p>v0.4.0 附带独立工具：游戏更新后从自己的安装包读取新物品，增量更新物品表，让修改器认识新枪新物件。</p></div>
-    </div>
-  </div>
-</section>
-
-<section id="start">
-  <div class="wrap">
-    <h2>使用方法</h2>
-    <p class="lead">便携版解压后双击「启动存档编辑器.bat」即可；连接头显后按三步操作。</p>
-    <div class="steps">
-      <div class="step"><div class="n">1</div><h3>连接并导出</h3>
-        <p>USB 数据线连接（或先「USB→启用无线调试」），点「刷新设备」选中头显，
-           再点「① 一键导出存档」。</p></div>
-      <div class="step"><div class="n">2</div><h3>编辑</h3>
-        <p>7 个标签页里改数值、商店、仓库；或直接套用预设。点「② 保存到本地」写盘。</p></div>
-      <div class="step"><div class="n">3</div><h3>回传生效</h3>
-        <p>点「③ 一键回传到头显」。程序强制停止游戏、备份、推送、<code>chmod 666</code>、
-           md5 校验并冷启动。</p></div>
+      <div class="card"><h3>数值</h3><p>货币、肉、金属、芥末、经验、血量、游玩统计；一键弹匣补满。</p></div>
+      <div class="card"><h3>商店</h3><p>684 种物品可选，改出售物品 / 售价 / 分区；增删货位、打折、统一定价。</p></div>
+      <div class="card"><h3>仓库</h3><p>多页 12×8 网格，换物品、改占格与位置、复制 / 删除 / 新增槽位。</p></div>
+      <div class="card"><h3>预设 / 收藏</h3><p>保存编辑内容为预设，导出新存档一键还原；收藏快速定位并批量加入。</p></div>
+      <div class="card"><h3>全部字段</h3><p>「全部参数（树）」逐字段改、「原始 JSON」整段编辑、「字段说明」生成中文说明。</p></div>
+      <div class="card"><h3>物品表生成器</h3><p>游戏更新后从自己的安装包读取新物品、增量更新物品表，让修改器认识新枪新物件。</p></div>
     </div>
     <div class="notice" style="margin-top:20px">
-      <h3>为什么必须停游戏再冷启动</h3>
-      <p>游戏只在<strong>启动时读档</strong>；运行中界面数值来自内存，跑图与结算会把
-         内存旧值写回文件，直接推送会被覆盖。底部「回传前停止游戏并冷启动」开关
-         默认开启，请勿关闭。出问题可点「恢复最近备份」回滚。</p>
+      <h3>非官方 · 仅用于自己的单机存档</h3>
+      <p>与游戏开发者、发行方、平台方无关联，只读写自己的单机存档 JSON，不修改游戏本体，
+         不绕过授权或内购，不收集或上传任何数据。默认且仅列官方包名 <code>com.rustltd.h3vr2</code>。</p>
     </div>
   </div>
 </section>
 
-<section id="presets">
+<section id="docs">
   <div class="wrap">
-    <h2>预设：导出新存档后不用重新编辑</h2>
-    <p class="lead">每次从设备重新导出的都是设备上的新内容，之前改好的商店与仓库不会
-       自动跟过来。预设把「编辑内容」单独存到程序目录，与存档分离。</p>
+    <h2>进阶与开发者文档</h2>
+    <p class="lead">想了解细节、排查问题或参与开发，请读二级文档（底层技术细节都收在那里，首页只保留上图的基础流程）。</p>
     <div class="grid g2">
-      <div class="card">
-        <h3>怎么用</h3>
-        <ul class="clean">
-          <li>改好商店或仓库 → 点「保存当前为预设」。</li>
-          <li>之后导出新存档 → 选预设点「一键应用（替换）」；或在「收藏与预设」页设为自动应用。</li>
-          <li>「追加物品」在不删除现有货位 / 槽位的前提下批量加入。</li>
-          <li>预设可导出成一份 JSON 分享，也可用记事本直接编辑。</li>
-        </ul>
-      </div>
-      <div>
-<pre><code>{
-  "version": 2,
-  "settings": {
-    "store_auto_preset": "我的常用商店",
-    "store_auto_mode": "replace"
-  },
-  "store_presets": {
-    "我的常用商店": {
-      "boxes": [
-        {"item": "M4A1", "price": 1,
-         "sectionID": "basics"}
-      ]
-    }
-  },
-  "inventory_presets": {
-    "常用补给": {
-      "items": [{"item": "MapR",
-                 "size": [1, 1]}]
-    }
-  },
-  "favorites": ["MapR"]
-}</code></pre>
-      </div>
+      <div class="card"><h3>用户指南（进阶）</h3><p>连接与传输细节、7 个标签页详解、预设 / 收藏结构、Venture 模拟器、包名策略、存档结构与字段、完整配置项、生效原理与回滚、常见问题。
+        <a href="https://github.com/LeonNagant/h3vr2-save-editor/blob/main/docs/USER-GUIDE.md">阅读 →</a></p></div>
+      <div class="card"><h3>物品表生成器用法</h3><p>游戏更新后从自己的安装包 / hdog / 根包读取新物品，增量更新物品表。
+        <a href="https://github.com/LeonNagant/h3vr2-save-editor/blob/main/tools/README.md">阅读 →</a></p></div>
+      <div class="card"><h3>文档索引</h3><p>免责声明与 AI 辅助说明、贡献指南、更新日志、版本摘要。
+        <a href="https://github.com/LeonNagant/h3vr2-save-editor#进阶与开发者文档">在仓库首页查看 →</a></p></div>
+      <div class="card"><h3>验证与边界</h3><p>单元测试 103/103 通过，发布包脱敏 0 命中；VR 渲染层无法截屏，游戏内显示需头显肉眼确认。
+        <a href="https://github.com/LeonNagant/h3vr2-save-editor/blob/main/docs/USER-GUIDE.md#8-生效原理风险与回滚">了解风险 →</a></p></div>
     </div>
-  </div>
-</section>
-
-<section id="package">
-  <div class="wrap">
-    <h2>包名与兼容策略</h2>
-    <div class="notice amber">
-      <h3>默认且仅列出官方包名 <code>com.rustltd.h3vr2</code></h3>
-      <p>本仓库的源码、配置、文档与项目页面不预置、不列举、不推荐任何被修改包名后
-         分发的第三方版本；对付费汉化及改包分发不提供支持、不鼓励、不宣传。
-         请使用合法取得的游戏副本。本仓库不提供、不托管、不链接任何游戏安装包、
-         OBB 数据或汉化资源。</p>
-    </div>
-    <div class="card">
-      <h3>如果设备上的包名与官方不同</h3>
-      <p>点界面「<strong>自动探测</strong>」，程序会枚举设备
-         <code>/sdcard/Android/data</code> 下真实存在的游戏包名与存档槽
-         （<code>Profile0</code> = Slot 1），列出后由你手动选中并「保存配置」。
-         这是设备侧的通用兼容能力，<strong>不是对任何第三方发行版的推荐</strong>。</p>
-      <ul class="clean" style="margin-top:10px">
-        <li>程序启动时不会静默枚举设备包名；</li>
-        <li>默认配置、下拉框初始值与兜底候选都只有官方包名；</li>
-        <li>配置里已指定包名时，导出 / 回传不会在未经你操作的情况下自动切换目标。</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section id="version">
-  <div class="wrap">
-    <h2>版本信息与下载</h2>
-    <table>
-      <tr><th style="width:180px">项目</th><th>内容</th></tr>
-      <tr><td>当前版本</td><td><span class="pill">v0.4.0</span></td></tr>
-      <tr><td>发布日期</td><td>2026-11-26</td></tr>
-      <tr><td>适用平台</td><td>Windows 10/11 64 位 + Meta Quest（已开启开发者模式 / USB 调试）；含 PC 端 Venture 模拟器</td></tr>
-      <tr><td>运行环境</td><td>便携版自带 Python 3.10.5（含 tkinter）与 adb，零第三方 pip 依赖</td></tr>
-      <tr><td>下载</td><td><a href="https://github.com/LeonNagant/h3vr2-save-editor/releases/tag/v0.4.0">Releases · v0.4.0</a> → <code>H3VR2-Save-Editor-v0.4.0-Windows-Portable.zip</code>（资产用 ASCII 名，解压后目录与说明均为中文）</td></tr>
-      <tr><td>源码 / 更新日志</td><td><a href="https://github.com/LeonNagant/h3vr2-save-editor">GitHub 仓库</a> · <a href="https://github.com/LeonNagant/h3vr2-save-editor/blob/main/CHANGELOG.md">CHANGELOG.md</a></td></tr>
-      <tr><td>许可</td><td>MIT（仅覆盖本仓库原创代码与文档；内附 Python / adb 遵循各自许可证）</td></tr>
-    </table>
-    <p class="lead" style="margin-top:18px">v0.4.0 更新物品表至 684 条（新增 SCAR 系列等 18 件），并附独立「物品表生成器」可用自己的安装包增量更新；
-       v0.3.0 新增 Venture 模拟器存档支持（自动查找 / 手动选目录 / 直接写回 + 备份）；
-       v0.2.0 新增预设与自动还原、玩家仓库编辑、收藏；修复中文路径下导出失败（让 adb 不接触本地路径）与默认包名收敛。
-       v0.1.0 为首个公开版本，含存档解析、GUI、商店编辑与一键导出 / 回传。</p>
-  </div>
-</section>
-
-<section id="verify">
-  <div class="wrap">
-    <h2>验证与边界</h2>
-    <div class="grid g2">
-      <div class="card"><h3>已验证</h3>
-        <ul class="clean">
-          <li>单元测试 103/103 通过（含 5 项新物品、17 项 Venture 回归、中文路径导出 7 项、默认包名约束 6 项及反例）。</li>
-          <li>GUI 真实启动；Venture 存档查找 / 写回 / 备份回滚经仿真目录树回归，真实存档未被写入。</li>
-          <li>商店价格与出售物品、仓库新增物件经真机「停游戏 → 回传 → 冷启动 → 重新导出」验证被接受。</li>
-          <li>发布包 <code>testzip</code> 通过；脱敏扫描 0 命中，不含玩家存档数据。</li>
-        </ul>
-      </div>
-      <div class="card"><h3>已知边界</h3>
-        <ul class="clean">
-          <li>VR 渲染层无法截屏，商店与仓库在游戏界面里的实际显示需在头显内肉眼确认；文件层、读档层与冷启动回读均已验证。</li>
-          <li>物品请用目录中标记「已验证」的引用；编造不存在的 <code>extref</code> 可能导致读档失败。</li>
-          <li>游戏版本更新后存档结构可能变化，本项目不保证适配未来版本。</li>
-          <li>修改存档有风险，请自行留存完整原档。</li>
-        </ul>
-      </div>
-    </div>
+    <p class="lead" style="margin-top:18px">版本沿革：v0.4.0 更新物品表至 684 条（新增 SCAR 系列等 18 件）并附物品表生成器；
+       v0.3.0 新增 Venture 模拟器存档支持（社区贡献 PR #1）；v0.2.0 新增预设 / 仓库编辑 / 收藏并修复中文路径导出；
+       v0.1.0 为首个公开版本。</p>
   </div>
 </section>
 
@@ -310,13 +249,13 @@
   <div class="wrap cols">
     <div>
       <div><strong>H3VR2 存档编辑器</strong> · v0.4.0 · 非官方第三方工具</div>
-      <div style="margin-top:6px">本项目使用 <strong>AI 生成辅助</strong>，经人工审阅与真机验证后发布。</div>
+      <div style="margin-top:6px">本项目使用 <strong>AI 生成辅助</strong>，经人工审阅与测试后发布。</div>
       <div style="margin-top:6px">游戏名称与商标归各自权利人所有；本项目与其无关联、未获授权。</div>
     </div>
     <div>
       <div><a href="https://github.com/LeonNagant/h3vr2-save-editor">GitHub 仓库</a></div>
       <div><a href="https://github.com/LeonNagant/h3vr2-save-editor/blob/main/DISCLAIMER.md">免责声明</a></div>
-      <div><a href="https://github.com/LeonNagant/h3vr2-save-editor/blob/main/CONTRIBUTING.md">贡献指南</a></div>
+      <div><a href="https://github.com/LeonNagant/h3vr2-save-editor/blob/main/docs/USER-GUIDE.md">用户指南</a></div>
       <div><a href="https://github.com/LeonNagant/h3vr2-save-editor/releases">全部版本</a></div>
     </div>
   </div>
